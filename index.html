@@ -132,6 +132,7 @@ canvas#fx-canvas {
     justify-content: center;
     align-items: center;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .screen.active {
@@ -144,7 +145,7 @@ canvas#fx-canvas {
     display: none !important;
 }
 
-h1, h2, h3, p {
+h1, h2, h3 {
     margin-bottom: 20px;
     line-height: 1.6;
     text-shadow: 0 2px 10px rgba(255,255,255,0.5);
@@ -153,13 +154,6 @@ h1, h2, h3, p {
 h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--coffee-brown);
-}
-
-p {
-    font-size: 1.1rem;
-    color: #5A4030;
-    font-weight: 500;
 }
 
 .glowing-btn {
@@ -236,7 +230,7 @@ p {
     100% { width: 100%; }
 }
 
-/* Water Floating Text Effect for Typewriter */
+/* Typewriter & Floating Text Effect */
 .typewriter-text {
     font-size: 1.5rem;
     font-weight: 600;
@@ -249,7 +243,7 @@ p {
 
 .water-char {
     display: inline-block;
-    animation: float-water 2s ease-in-out infinite;
+    animation: float-water 2.5s ease-in-out infinite;
 }
 
 @keyframes float-water {
@@ -272,37 +266,63 @@ p {
     50% { opacity: 0; }
 }
 
-/* Story Mode & Water Text Effect for Paragraphs */
+/* Multi-Line Story System with Colors & Delays */
 .story-slide {
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    animation: fade-in-slide 0.6s ease forwards;
+    width: 100%;
 }
 .story-slide.active-slide {
     display: flex;
 }
 
-.story-slide p {
+.line-container {
+    opacity: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.6);
+}
+
+.water-text {
     display: block;
     animation: float-water-p 3s ease-in-out infinite;
 }
-.story-slide p:nth-child(1) { animation-delay: 0.0s; }
-.story-slide p:nth-child(2) { animation-delay: 0.2s; }
-.story-slide p:nth-child(3) { animation-delay: 0.4s; }
-.story-slide p:nth-child(4) { animation-delay: 0.6s; }
-.story-slide p:nth-child(5) { animation-delay: 0.8s; }
 
 @keyframes float-water-p {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-5px); }
 }
 
-@keyframes fade-in-slide {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+/* Colors */
+.color-brown { color: #4A3018; }
+.color-rose { color: #B56576; }
+.color-gold { color: #C99700; text-shadow: 0 0 8px rgba(212,175,55,0.4); }
+.color-peach { color: #D98A6C; }
+.color-dark { color: #2B1810; }
+
+/* Entrance Animations */
+@keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+@keyframes dropDown { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
+
+.active-slide .anim-slide-up, .screen.active .anim-slide-up { animation: slideUp 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.active-slide .anim-slide-left, .screen.active .anim-slide-left { animation: slideLeft 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.active-slide .anim-slide-right, .screen.active .anim-slide-right { animation: slideRight 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.active-slide .anim-zoom, .screen.active .anim-zoom { animation: zoomIn 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.active-slide .anim-drop, .screen.active .anim-drop { animation: dropDown 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* Dynamic Delays */
+.delay-1 { animation-delay: 0.5s !important; }
+.delay-2 { animation-delay: 1.8s !important; }
+.delay-3 { animation-delay: 3.1s !important; }
+.delay-4 { animation-delay: 4.4s !important; }
+.delay-5 { animation-delay: 5.7s !important; }
+.delay-6 { animation-delay: 6.8s !important; }
 
 /* Big Coffee Icon */
 .giant-coffee {
@@ -364,7 +384,6 @@ p {
 .neon-text {
     color: var(--coffee-brown);
     text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--gold);
-    animation: float-water-p 3s ease-in-out infinite;
 }
 
 /* Button Container */
@@ -374,6 +393,7 @@ p {
     gap: 15px;
     width: 100%;
     margin-top: 20px;
+    opacity: 0;
 }
 
 @media (min-width: 600px) {
@@ -401,73 +421,82 @@ p {
 
     <div id="loading-screen" class="screen active">
         <div class="giant-coffee" style="animation-duration: 2s;">☕</div>
-        <h2>Brewing Something Special...</h2>
+        <h2 class="color-brown">Brewing Something Special...</h2>
         <div class="progress-bar-container">
             <div class="progress-bar"></div>
         </div>
     </div>
 
     <div id="welcome-screen" class="screen">
-        <div id="typewriter-container" style="min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-            <div id="line1" class="typewriter-text"></div>
-            <div id="line2" class="typewriter-text"></div>
-            <div id="line3" class="typewriter-text"></div>
+        <div id="typewriter-container" style="min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <div id="line1" class="typewriter-text color-brown"></div>
+            <div id="line2" class="typewriter-text color-rose"></div>
+            <div id="line3" class="typewriter-text color-gold"></div>
         </div>
-        <button id="btn-continue-welcome" class="glowing-btn" style="opacity: 0; pointer-events: none; transition: opacity 1s;">☕ Continue</button>
+        <button id="btn-continue-welcome" class="glowing-btn anim-zoom" style="opacity: 0; pointer-events: none; transition: opacity 1s;">☕ Continue</button>
     </div>
 
     <div id="story-screen" class="screen">
         <div id="story-1" class="story-slide active-slide">
-            <p>Imagine this...</p>
-            <p>A cozy café.<br>Soft music.<br>Fresh coffee.</p>
-            <p>Good conversation.<br>Two people laughing.</p>
+            <div class="line-container delay-1 anim-slide-up color-brown"><span class="water-text">Imagine this...</span></div>
+            <div class="line-container delay-2 anim-slide-left color-rose"><span class="water-text">A cozy café.</span></div>
+            <div class="line-container delay-3 anim-zoom color-peach"><span class="water-text">Soft music.</span></div>
+            <div class="line-container delay-4 anim-slide-right color-gold"><span class="water-text">Fresh coffee.</span></div>
+            <div class="line-container delay-5 anim-drop color-dark"><span class="water-text">Good conversation.<br>Two people laughing.</span></div>
         </div>
         <div id="story-2" class="story-slide">
-            <p>Sometimes...</p>
-            <p>the best conversations...</p>
-            <p>don't happen through endless texting.</p>
-            <p>They happen over coffee.</p>
+            <div class="line-container delay-1 anim-zoom color-gold"><span class="water-text">Sometimes...</span></div>
+            <div class="line-container delay-2 anim-slide-right color-brown"><span class="water-text">the best conversations...</span></div>
+            <div class="line-container delay-3 anim-drop color-rose"><span class="water-text">don't happen through endless texting.</span></div>
+            <div class="line-container delay-4 anim-slide-up color-dark"><span class="water-text">They happen over coffee.</span></div>
         </div>
         <div id="story-3" class="story-slide">
-            <p>No interviews.</p>
-            <p>No awkward silence.</p>
-            <p>No expectations.</p>
-            <p>Just coffee.<br>Good conversation.</p>
-            <p>And seeing where the moment takes us.</p>
+            <div class="line-container delay-1 anim-slide-left color-peach"><span class="water-text">No interviews.</span></div>
+            <div class="line-container delay-2 anim-slide-right color-rose"><span class="water-text">No awkward silence.</span></div>
+            <div class="line-container delay-3 anim-zoom color-brown"><span class="water-text">No expectations.</span></div>
+            <div class="line-container delay-4 anim-drop color-gold"><span class="water-text">Just coffee. Good conversation.</span></div>
+            <div class="line-container delay-5 anim-slide-up color-dark"><span class="water-text">And seeing where the moment takes us.</span></div>
         </div>
         <div id="story-4" class="story-slide">
-            <p>Life is full of random adventures.</p>
-            <p>Maybe...</p>
-            <p>one cup of coffee...</p>
-            <p>could become one of them.</p>
+            <div class="line-container delay-1 anim-zoom color-dark"><span class="water-text">Life is full of random adventures.</span></div>
+            <div class="line-container delay-2 anim-drop color-peach"><span class="water-text">Maybe...</span></div>
+            <div class="line-container delay-3 anim-slide-left color-gold"><span class="water-text">one cup of coffee...</span></div>
+            <div class="line-container delay-4 anim-slide-up color-rose"><span class="water-text">could become one of them.</span></div>
         </div>
         <div id="story-5" class="story-slide">
-            <p>So...</p>
-            <p>instead of wondering forever...</p>
-            <p>I thought...</p>
-            <p>I'd simply ask.</p>
+            <div class="line-container delay-1 anim-slide-right color-brown"><span class="water-text">So...</span></div>
+            <div class="line-container delay-2 anim-slide-left color-dark"><span class="water-text">instead of wondering forever...</span></div>
+            <div class="line-container delay-3 anim-zoom color-peach"><span class="water-text">I thought...</span></div>
+            <div class="line-container delay-4 anim-drop color-gold"><span class="water-text">I'd simply ask.</span></div>
         </div>
-        <button id="btn-next-story" class="glowing-btn" style="margin-top: 30px;">Next ✨</button>
+        
+        <button id="btn-next-story" class="glowing-btn anim-zoom" style="margin-top: 30px; opacity: 0; pointer-events: none; transition: opacity 0.5s;">Next ✨</button>
     </div>
 
     <div id="final-screen" class="screen">
-        <div id="coffee-trigger" class="giant-coffee">☕</div>
-        <h1 class="neon-text">Would you like to grab a coffee sometime?</h1>
-        <p style="font-size: 0.95rem; margin-top: -10px; animation: float-water-p 3s ease-in-out infinite; animation-delay: 0.3s;">
-            No pressure.<br>
-            No expectations.<br>
-            Just coffee.<br>
-            Good conversation.<br>
-            And hopefully... a few laughs.
-        </p>
-        <div class="btn-container">
+        <div id="coffee-trigger" class="giant-coffee delay-1 anim-zoom" style="opacity: 0;">☕</div>
+        <div class="line-container delay-2 anim-drop">
+            <h1 class="neon-text color-gold water-text">Would you like to grab a coffee sometime?</h1>
+        </div>
+        
+        <div class="line-container delay-3 anim-slide-up color-rose" style="margin-top: -10px;">
+            <span class="water-text" style="font-size: 1rem; font-weight: 500;">
+                No pressure.<br>
+                No expectations.<br>
+                Just coffee.<br>
+                Good conversation.<br>
+                And hopefully... a few laughs.
+            </span>
+        </div>
+        
+        <div class="btn-container delay-4 anim-zoom">
             <button id="btn-yes" class="glowing-btn">☕ Sounds Fun</button>
             <button id="btn-no" class="glowing-btn btn-secondary">😊 Maybe Another Time</button>
         </div>
     </div>
 
     <div id="response-screen" class="screen">
-        <div id="response-icon" class="giant-coffee">💖</div>
+        <div id="response-icon" class="giant-coffee delay-1 anim-zoom" style="opacity: 0;">💖</div>
         <div id="response-text"></div>
     </div>
 
@@ -528,6 +557,11 @@ function switchScreen(hideId, showId) {
         // Force reflow
         void showEl.offsetWidth;
         showEl.classList.add('active');
+        
+        // Show next button when story slide appears
+        if(showId === 'story-screen') {
+            triggerStoryNextButton();
+        }
     }, 800);
 }
 
@@ -564,11 +598,11 @@ async function typeText(elementId, text, speed = 60) {
 
 async function runWelcomeTypewriter() {
     await typeText('line1', 'Hey 👋', 80);
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 1200));
     await typeText('line2', 'I made something fun.', 60);
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 1200));
     await typeText('line3', 'I hope it makes you smile.', 60);
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 800));
     
     const btn = document.getElementById('btn-continue-welcome');
     btn.style.pointerEvents = 'auto';
@@ -579,12 +613,27 @@ document.getElementById('btn-continue-welcome').addEventListener('click', () => 
     switchScreen('welcome-screen', 'story-screen');
 });
 
+// Delay showing the "Next" button until animations finish
+function triggerStoryNextButton() {
+    const nextBtn = document.getElementById('btn-next-story');
+    nextBtn.style.opacity = '0';
+    nextBtn.style.pointerEvents = 'none';
+    
+    // Total animation time for max delay-5 is 5.7s + 1s animation = ~6.7s
+    setTimeout(() => {
+        nextBtn.style.opacity = '1';
+        nextBtn.style.pointerEvents = 'auto';
+    }, 6000);
+}
+
 // --- Story Mode ---
 document.getElementById('btn-next-story').addEventListener('click', () => {
     document.getElementById(`story-${storyIndex}`).classList.remove('active-slide');
     storyIndex++;
     if (storyIndex <= 5) {
         document.getElementById(`story-${storyIndex}`).classList.add('active-slide');
+        triggerStoryNextButton();
+        
         if(storyIndex === 5) {
             document.getElementById('btn-next-story').innerHTML = "Let's see ✨";
         }
@@ -598,9 +647,9 @@ document.getElementById('btn-yes').addEventListener('click', () => {
     triggerExplosion('yes');
     document.getElementById('response-icon').innerHTML = "💖";
     document.getElementById('response-text').innerHTML = `
-        <h2 style="animation: float-water-p 3s ease-in-out infinite;">You just made my day.</h2>
-        <p style="animation: float-water-p 3s ease-in-out infinite; animation-delay: 0.2s;">I'll find a great café.</p>
-        <p style="animation: float-water-p 3s ease-in-out infinite; animation-delay: 0.4s;">You bring your smile.</p>
+        <div class="line-container delay-1 anim-zoom color-brown"><h2 class="water-text">You just made my day.</h2></div>
+        <div class="line-container delay-2 anim-slide-right color-rose"><span class="water-text">I'll find a great café.</span></div>
+        <div class="line-container delay-3 anim-slide-up color-gold"><span class="water-text">You bring your smile.</span></div>
     `;
     switchScreen('final-screen', 'response-screen');
 });
@@ -609,9 +658,9 @@ document.getElementById('btn-no').addEventListener('click', () => {
     triggerExplosion('no');
     document.getElementById('response-icon').innerHTML = "☕";
     document.getElementById('response-text').innerHTML = `
-        <h2 style="animation: float-water-p 3s ease-in-out infinite;">No worries.</h2>
-        <p style="animation: float-water-p 3s ease-in-out infinite; animation-delay: 0.2s;">The invitation stays open.</p>
-        <p style="animation: float-water-p 3s ease-in-out infinite; animation-delay: 0.4s;">I hope your day is filled with good coffee and good moments.</p>
+        <div class="line-container delay-1 anim-drop color-brown"><h2 class="water-text">No worries.</h2></div>
+        <div class="line-container delay-2 anim-slide-left color-dark"><span class="water-text">The invitation stays open.</span></div>
+        <div class="line-container delay-3 anim-slide-up color-peach"><span class="water-text">I hope your day is filled with good coffee and good moments.</span></div>
     `;
     switchScreen('final-screen', 'response-screen');
 });
@@ -624,11 +673,15 @@ document.getElementById('coffee-trigger').addEventListener('click', () => {
         document.getElementById('coffee-trigger').innerHTML = "🌈";
         setTimeout(() => {
             document.getElementById('final-screen').innerHTML = `
-                <div class="giant-coffee" style="font-size:4rem;">🎉</div>
-                <h2 class="neon-text" style="animation: float-water-p 3s ease-in-out infinite;">Congratulations.</h2>
-                <p style="animation: float-water-p 3s ease-in-out infinite; animation-delay: 0.2s;">You found the hidden surprise!</p>
-                <p style="animation: float-water-p 3s ease-in-out infinite; animation-delay: 0.4s;">You are officially amazing.</p>
+                <div class="giant-coffee anim-zoom delay-1" style="font-size:4rem; opacity:0;">🎉</div>
+                <div class="line-container delay-2 anim-drop"><h2 class="neon-text color-gold water-text">Congratulations.</h2></div>
+                <div class="line-container delay-3 anim-slide-right color-rose"><span class="water-text">You found the hidden surprise!</span></div>
+                <div class="line-container delay-4 anim-slide-up color-dark"><span class="water-text">You are officially amazing.</span></div>
             `;
+            // Trigger animation classes by toggling active state
+            document.getElementById('final-screen').classList.remove('active');
+            void document.getElementById('final-screen').offsetWidth;
+            document.getElementById('final-screen').classList.add('active');
         }, 1000);
     }
 });
@@ -781,7 +834,6 @@ function triggerExplosion(type) {
             particles.push(new Particle(x, y, false, color));
         }
         
-        // Add extra DOM explosions
         for(let i=0; i<30; i++) {
             setTimeout(() => createFloatingElement('ambient'), i * 50);
         }
