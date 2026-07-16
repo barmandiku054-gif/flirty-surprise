@@ -1,1 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<title>a tiny surprise ✨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Quicksand:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink1:#ffe1ec;
+    --pink2:#ffc9dd;
+    --rose:#ff9fc0;
+    --magenta:#e8699a;
+    --lav1:#ecdcff;
+    --lav2:#d9bdff;
+    --deep:#8a4a86;
+    --gold:#ffe9ad;
+    --glass-bg: rgba(255,255,255,0.38);
+    --glass-border: rgba(255,255,255,0.6);
+    --shadow-soft: 0 10px 34px rgba(170,90,160,0.18);
+  }
+  *{box-sizing:border-box;}
+  html{ color-scheme: light only; }
+  html,body{
+    margin:0; padding:0; min-height:100%; width:100%;
+    overflow-x:hidden;
+    font-family:'Quicksand', sans-serif;
+    color:#6b3f66;
+  }
+  body{
+    background: linear-gradient(-45deg, #ffe1ec, #ecdcff, #ffd9ec, #e3ccff);
+    background-size: 400% 400%;
+    animation: gradientShift 16s ease infinite;
+    min-height:100vh;
+  }
+  @keyframes gradientShift{
+    0%{ background-position: 0% 50%; }
+    50%{ background-position: 100% 50%; }
+    100%{ background-position: 0% 50%; }
+  }
+  #app{ position:relative; min-height:100vh; width:100%; }
+
+  #ambient{ position:fixed; inset:0; pointer-events:none; z-index:2; overflow:hidden; }
+  .petal, .heart-float, .sparkle, .butterfly{ position:absolute; will-change:transform; }
+  .petal{
+    width:16px; height:16px;
+    background: radial-gradient(circle at 30% 30%, #ffe3ee, var(--rose));
+    border-radius: 0 60% 0 60%;
+    opacity:0.85;
+    animation: fall linear infinite, sway ease-in-out infinite;
+    filter: drop-shadow(0 2px 3px rgba(200,80,150,0.25));
+  }
+  @keyframes fall{
+    0%{ transform: translateY(-10vh) rotate(0deg); }
+    100%{ transform: translateY(110vh) rotate(400deg); }
+  }
+  @keyframes sway{
+    0%,100%{ margin-left:0px; }
+    50%{ margin-left:40px; }
+  }
+  .heart-float{
+    font-size:18px; color:var(--rose); opacity:0.55;
+    animation: floatUp linear infinite;
+    filter: drop-shadow(0 0 6px rgba(255,159,192,0.5));
+  }
+  @keyframes floatUp{
+    0%{ transform: translateY(10vh) scale(0.8) rotate(-8deg); opacity:0; }
+    10%{ opacity:0.6; }
+    90%{ opacity:0.6; }
+    100%{ transform: translateY(-110vh) scale(1.2) rotate(8deg); opacity:0; }
+  }
+  .sparkle{
+    width:6px; height:6px; background:var(--gold); border-radius:50%;
+    box-shadow:0 0 8px 2px rgba(255,233,173,0.9);
+    animation: twinkle ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{ opacity:0; transform:scale(0.4); }
+    50%{ opacity:1; transform:scale(1.1); }
+  }
+  .butterfly{ font-size:22px; animation: flutter linear infinite; opacity:0.85; }
+  @keyframes flutter{
+    0%{ transform: translate(-10vw, 60vh) rotate(0deg); }
+    25%{ transform: translate(30vw, 20vh) rotate(15deg); }
+    50%{ transform: translate(70vw, 55vh) rotate(-10deg); }
+    75%{ transform: translate(40vw, 15vh) rotate(10deg); }
+    100%{ transform: translate(-10vw, 60vh) rotate(0deg); }
+  }
+
+  .trail-heart{
+    position:fixed; z-index:5; pointer-events:none;
+    font-size:14px; opacity:0.8;
+    animation: trailFade 1s ease-out forwards;
+  }
+  @keyframes trailFade{
+    0%{ opacity:0.8; transform: translate(0,0) scale(1); }
+    100%{ opacity:0; transform: translate(-6px,-30px) scale(0.4); }
+  }
+
+  .glass{
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border-radius: 30px;
+    box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.6);
+    animation: bob 5s ease-in-out infinite;
+    transition: transform 0.25s ease;
+  }
+  @keyframes bob{
+    0%,100%{ transform: translateY(0px); }
+    50%{ transform: translateY(-7px); }
+  }
+
+  #loader{
+    position:fixed; inset:0; z-index:50;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background: linear-gradient(160deg, var(--pink1), var(--lav1));
+    transition: opacity 0.9s ease, visibility 0.9s ease;
+    overflow:hidden;
+  }
+  #loader.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+  .loader-orbit{ position:relative; width:120px; height:120px; margin-bottom:26px; }
+  .loader-heart{
+    width:56px; height:56px; position:absolute; left:32px; top:32px;
+    animation: heartbeat 1.1s ease-in-out infinite;
+  }
+  .loader-heart::before, .loader-heart::after{
+    content:''; position:absolute; top:0; width:30px; height:45px; border-radius:30px 30px 0 0;
+    background: linear-gradient(150deg, var(--rose), var(--magenta));
+  }
+  .loader-heart::before{ left:28px; transform: rotate(-45deg); transform-origin: 0 100%; }
+  .loader-heart::after{ left:0; transform: rotate(45deg); transform-origin: 100% 100%; }
+  @keyframes heartbeat{
+    0%,100%{ transform:scale(1); }
+    30%{ transform:scale(1.18); }
+    45%{ transform:scale(0.95); }
+    60%{ transform:scale(1.1); }
+  }
+  .loader-orbit span{
+    position:absolute; top:50%; left:50%; width:8px; height:8px; border-radius:50%;
+    background: var(--gold);
+    box-shadow:0 0 8px 2px rgba(255,233,173,0.8);
+    animation: orbit 3s linear infinite;
+  }
+  .loader-orbit span:nth-child(2){ animation-delay:-1s; background:var(--rose); }
+  .loader-orbit span:nth-child(3){ animation-delay:-2s; background:var(--lav2); }
+  @keyframes orbit{
+    from{ transform: rotate(0deg) translateX(58px) rotate(0deg); }
+    to{ transform: rotate(360deg) translateX(58px) rotate(-360deg); }
+  }
+  #loader p{ font-family:'Dancing Script', cursive; font-size:1.5rem; color:var(--deep); letter-spacing:0.5px; }
+  .loader-bar{ width:180px; height:6px; border-radius:6px; background:rgba(255,255,255,0.6); overflow:hidden; margin-top:14px; }
+  .loader-bar-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--rose),var(--lav2)); border-radius:6px; animation: loadfill 2.1s ease forwards; }
+  @keyframes loadfill{ to{ width:100%; } }
+
+  #stage{
+    position:relative; z-index:10;
+    min-height:100vh; width:100%;
+    display:flex; align-items:center; justify-content:center;
+    padding: 6vh 5vw;
+  }
+  .screen{
+    display:none;
+    width:100%; max-width:560px;
+    padding: 48px 38px;
+    text-align:center;
+  }
+  .screen.active{
+    display:block;
+    animation: cardIn 0.75s cubic-bezier(.2,.9,.25,1.15);
+  }
+  .screen.leaving{
+    display:block;
+    animation: cardOut 0.4s cubic-bezier(.5,0,.75,0) forwards;
+  }
+  @keyframes cardIn{
+    0%{ opacity:0; transform: translateY(34px) scale(0.94) rotateX(6deg); filter: blur(6px); }
+    60%{ filter: blur(0px); }
+    100%{ opacity:1; transform: translateY(0) scale(1) rotateX(0); filter: blur(0px); }
+  }
+  @keyframes cardOut{
+    0%{ opacity:1; transform: translateY(0) scale(1); filter: blur(0px); }
+    100%{ opacity:0; transform: translateY(-26px) scale(0.95); filter: blur(4px); }
+  }
+
+  .eyebrow{
+    font-size:0.76rem; letter-spacing:3px; text-transform:uppercase;
+    color:var(--deep); opacity:0.6; margin-bottom:10px; font-weight:600;
+  }
+  h1, h2{
+    font-family:'Playfair Display', serif; font-style:italic;
+    color:var(--deep); margin:0 0 16px;
+    font-size: clamp(1.5rem, 4vw, 2.3rem);
+    line-height:1.3;
+  }
+  .script{ font-family:'Dancing Script', cursive; font-weight:700; color:var(--magenta); }
+  .typewriter{
+    font-size: clamp(1rem, 2.4vw, 1.2rem);
+    min-height: 3.2em;
+    line-height:1.6;
+    color:#6b3f66;
+    margin: 0 0 26px;
+  }
+  .typewriter .cursor{ display:inline-block; width:2px; background:var(--magenta); margin-left:2px; animation: blink 0.8s step-end infinite; }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .btn-row{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+  button{
+    font-family:'Quicksand', sans-serif; font-weight:700; font-size:1rem;
+    padding:14px 30px; border-radius:999px; border:none; cursor:pointer;
+    color:#fff; background: linear-gradient(135deg, var(--rose), var(--lav2));
+    box-shadow: 0 6px 20px rgba(200,120,190,0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position:relative; overflow:hidden;
+  }
+  button::after{
+    content:'';
+    position:absolute; top:0; left:-75%; width:50%; height:100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+    transform: skewX(-20deg);
+    animation: shimmer 3.2s ease-in-out infinite;
+  }
+  @keyframes shimmer{
+    0%{ left:-75%; }
+    40%{ left:130%; }
+    100%{ left:130%; }
+  }
+  button:hover{ transform: translateY(-2px) scale(1.03); box-shadow: 0 10px 26px rgba(200,120,190,0.45); }
+  button:active{ transform: translateY(0) scale(0.98); }
+  .btn-ghost{
+    background: rgba(255,255,255,0.5);
+    color:var(--deep);
+    border:1px solid rgba(255,255,255,0.8);
+    box-shadow:none;
+  }
+  .btn-ghost::after{ display:none; }
+
+  .progress-dots{ display:flex; gap:8px; justify-content:center; margin-bottom:22px; flex-wrap:wrap; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:rgba(138,74,134,0.22); transition: all 0.35s ease; }
+  .dot.on{ background:var(--magenta); width:22px; border-radius:6px; }
+
+  .card-emoji{
+    font-size:2.6rem; margin-bottom:10px;
+    display:inline-block;
+    animation: emojiPop 0.6s cubic-bezier(.3,1.6,.6,1) both;
+  }
+  @keyframes emojiPop{
+    0%{ transform: scale(0) rotate(-15deg); opacity:0; }
+    70%{ transform: scale(1.15) rotate(4deg); opacity:1; }
+    100%{ transform: scale(1) rotate(0); }
+  }
+
+  .heart-burst{
+    font-size:3rem; margin-bottom:6px;
+    animation: bigPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes bigPulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.15) rotate(-3deg); }
+  }
+
+  #confetti-canvas{ position:fixed; inset:0; z-index:60; pointer-events:none; }
+
+  #musicToggle{
+    position:fixed; top:18px; right:18px; z-index:70;
+    width:52px; height:52px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem; padding:0;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-soft);
+    color: var(--deep);
+    animation:none;
+  }
+  #musicToggle::after{ display:none; }
+  #musicToggle:hover{ transform: translateY(-2px) scale(1.05); }
+  #musicToggle .bars{ display:flex; gap:2px; align-items:flex-end; height:16px; }
+  #musicToggle .bars span{
+    width:3px; background:var(--magenta); border-radius:2px; height:6px;
+  }
+  #musicToggle.playing .bars span{ animation: eq 0.9s ease-in-out infinite; }
+  #musicToggle .bars span:nth-child(1){ animation-delay:0s; }
+  #musicToggle .bars span:nth-child(2){ animation-delay:0.2s; }
+  #musicToggle .bars span:nth-child(3){ animation-delay:0.4s; }
+  @keyframes eq{
+    0%,100%{ height:6px; }
+    50%{ height:16px; }
+  }
+
+  @media (max-width:480px){
+    .screen{ padding:34px 22px; }
+    button{ padding:12px 22px; font-size:0.92rem; }
+    #musicToggle{ width:46px; height:46px; top:14px; right:14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-orbit">
+    <div class="loader-heart"></div>
+    <span></span><span></span><span></span>
+  </div>
+  <p>A tiny surprise is loading...</p>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<button id="musicToggle" aria-label="Play soft background music" title="Play soft background music">
+  <div class="bars"><span></span><span></span><span></span></div>
+</button>
+
+<div id="app">
+  <div id="ambient"></div>
+
+  <div id="stage">
+
+    <div class="screen glass active" data-screen="0">
+      <div class="card-emoji">👋</div>
+      <h1 class="script">Hey</h1>
+      <p class="typewriter" id="tw0"></p>
+      <div class="btn-row">
+        <button onclick="goTo(1)">Open Surprise ✨</button>
+      </div>
+    </div>
+
+    <div class="screen glass" data-screen="1">
+      <div class="progress-dots" id="dots1"></div>
+      <div class="card-emoji">😊</div>
+      <p class="typewriter" id="tw1" style="font-size:clamp(1.1rem,2.8vw,1.35rem);"></p>
+      <div class="btn-row"><button onclick="goTo(2)">next</button></div>
+    </div>
+
+    <div class="screen glass" data-screen="2">
+      <div class="progress-dots" id="dots2"></div>
+      <div class="card-emoji">🌷</div>
+      <p class="typewriter" id="tw2" style="font-size:clamp(1.1rem,2.8vw,1.35rem);"></p>
+      <div class="btn-row">
+        <button class="btn-ghost" onclick="goTo(1)">back</button>
+        <button onclick="goTo(3)">next</button>
+      </div>
+    </div>
+
+    <div class="screen glass" data-screen="3">
+      <div class="progress-dots" id="dots3"></div>
+      <div class="card-emoji">💬</div>
+      <p class="typewriter" id="tw3" style="font-size:clamp(1.1rem,2.8vw,1.35rem);"></p>
+      <div class="btn-row">
+        <button class="btn-ghost" onclick="goTo(2)">back</button>
+        <button onclick="goTo(4)">next</button>
+      </div>
+    </div>
+
+    <div class="screen glass" data-screen="4">
+      <div class="progress-dots" id="dots4"></div>
+      <div class="card-emoji">🍃</div>
+      <p class="typewriter" id="tw4" style="font-size:clamp(1.1rem,2.8vw,1.35rem);"></p>
+      <div class="btn-row">
+        <button class="btn-ghost" onclick="goTo(3)">back</button>
+        <button onclick="goTo(5)">next</button>
+      </div>
+    </div>
+
+    <div class="screen glass" data-screen="5">
+      <div class="progress-dots" id="dots5"></div>
+      <div class="card-emoji">😉</div>
+      <p class="typewriter" id="tw5" style="font-size:clamp(1.1rem,2.8vw,1.35rem);"></p>
+      <div class="btn-row">
+        <button class="btn-ghost" onclick="goTo(4)">back</button>
+        <button onclick="goTo(6)">next</button>
+      </div>
+    </div>
+
+    <div class="screen glass" data-screen="6">
+      <div class="progress-dots" id="dots6"></div>
+      <div class="card-emoji">🌸</div>
+      <p class="typewriter" id="tw6" style="font-size:clamp(1.1rem,2.8vw,1.35rem);"></p>
+      <div class="btn-row">
+        <button class="btn-ghost" onclick="goTo(5)">back</button>
+        <button onclick="goTo(7)">next</button>
+      </div>
+    </div>
+
+    <div class="screen glass" data-screen="7">
+      <div class="progress-dots" id="dots7"></div>
+      <div class="card-emoji">✨</div>
+      <p class="typewriter" id="tw7" style="font-size:clamp(1.1rem,2.8vw,1.35rem);"></p>
+      <div class="btn-row">
+        <button class="btn-ghost" onclick="goTo(6)">back</button>
+        <button onclick="goTo(8)">next</button>
+      </div>
+    </div>
+
+    <div class="screen glass" data-screen="8">
+      <div class="eyebrow">the reason for all this</div>
+      <h1>I thought I'd make this little page <span class="script">just to brighten your day.</span></h1>
+      <p class="typewriter" id="tw8" style="min-height:2.4em;"></p>
+      <div class="btn-row">
+        <button onclick="react()">😊 That made me smile</button>
+        <button onclick="react()">🌸 You're sweet</button>
+      </div>
+    </div>
+
+    <div class="screen glass" data-screen="final">
+      <div class="heart-burst">💖</div>
+      <h1>Mission accomplished! <span class="script">😊</span></h1>
+      <p class="typewriter" id="twFinal" style="min-height:auto;"></p>
+    </div>
+
+  </div>
+</div>
+
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+const ambient = document.getElementById('ambient');
+function rand(min,max){ return Math.random()*(max-min)+min; }
+
+function spawnPetals(n){
+  for(let i=0;i<n;i++){
+    const p = document.createElement('div');
+    p.className='petal';
+    p.style.left = rand(0,100)+'vw';
+    p.style.top = rand(-20,-2)+'vh';
+    const dur = rand(9,18);
+    p.style.animationDuration = dur+'s, '+rand(2,4)+'s';
+    p.style.animationDelay = rand(0,14)+'s, 0s';
+    p.style.width = p.style.height = rand(10,20)+'px';
+    ambient.appendChild(p);
+  }
+}
+function spawnHearts(n){
+  const glyphs=['💗','💕','🩷','❤️','💞'];
+  for(let i=0;i<n;i++){
+    const h = document.createElement('div');
+    h.className='heart-float';
+    h.textContent = glyphs[Math.floor(rand(0,glyphs.length))];
+    h.style.left = rand(0,100)+'vw';
+    h.style.fontSize = rand(14,28)+'px';
+    const dur = rand(10,20);
+    h.style.animationDuration = dur+'s';
+    h.style.animationDelay = rand(0,16)+'s';
+    ambient.appendChild(h);
+  }
+}
+function spawnSparkles(n){
+  for(let i=0;i<n;i++){
+    const s = document.createElement('div');
+    s.className='sparkle';
+    s.style.left = rand(0,100)+'vw';
+    s.style.top = rand(0,100)+'vh';
+    s.style.animationDuration = rand(1.6,3.2)+'s';
+    s.style.animationDelay = rand(0,4)+'s';
+    ambient.appendChild(s);
+  }
+}
+function spawnButterflies(n){
+  for(let i=0;i<n;i++){
+    const b = document.createElement('div');
+    b.className='butterfly';
+    b.textContent='🦋';
+    b.style.animationDuration = rand(16,26)+'s';
+    b.style.animationDelay = rand(0,10)+'s';
+    b.style.top = rand(0,10)+'vh';
+    ambient.appendChild(b);
+  }
+}
+spawnPetals(20);
+spawnHearts(14);
+spawnSparkles(28);
+spawnButterflies(4);
+
+let lastTrail = 0;
+const isTouch = window.matchMedia('(pointer: coarse)').matches;
+if(!isTouch){
+  window.addEventListener('mousemove', (e)=>{
+    const now = Date.now();
+    if(now - lastTrail < 90) return;
+    lastTrail = now;
+    const glyphs = ['💗','✨','🌸'];
+    const t = document.createElement('div');
+    t.className = 'trail-heart';
+    t.textContent = glyphs[Math.floor(rand(0,glyphs.length))];
+    t.style.left = (e.clientX - 6) + 'px';
+    t.style.top = (e.clientY - 6) + 'px';
+    document.body.appendChild(t);
+    setTimeout(()=> t.remove(), 1000);
+  });
+}
+
+if(!isTouch){
+  document.addEventListener('mousemove', (e)=>{
+    const el = document.querySelector('.screen.active');
+    if(!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    const dx = (e.clientX - cx) / rect.width;
+    const dy = (e.clientY - cy) / rect.height;
+    el.style.transform = `perspective(900px) rotateY(${dx*4}deg) rotateX(${-dy*4}deg)`;
+  });
+}
+
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{
+    document.getElementById('loader').classList.add('hidden');
+    typeLine(0);
+  }, 2100);
+});
+
+const lines = {
+  0: "I made something fun... just for you 😊",
+  1: "Someone has a really beautiful smile 😊",
+  2: "She's got a laugh that's honestly a little contagious.",
+  3: "She somehow makes ordinary conversations feel more interesting.",
+  4: "She remembers little details other people usually forget.",
+  5: "She's reading this page right now... 😉",
+  6: "I don't know if you noticed... but you make me smile too.",
+  7: "Anyway, that's the surprise. Nothing dramatic — just true.",
+  8: ""
+};
+const typedFlags = {};
+
+function typeLine(step){
+  if(typedFlags[step]) return;
+  typedFlags[step] = true;
+  const el = document.getElementById('tw'+step);
+  if(!el) return;
+  const text = lines[step];
+  el.innerHTML = '';
+  let i = 0;
+  const cursor = document.createElement('span');
+  cursor.className='cursor';
+  cursor.innerHTML='&nbsp;';
+  function tick(){
+    if(i <= text.length){
+      el.textContent = text.slice(0,i);
+      el.appendChild(cursor);
+      i++;
+      setTimeout(tick, 24);
+    }
+  }
+  tick();
+}
+
+const totalCardScreens = 7;
+for(let s=1; s<=totalCardScreens; s++){
+  const container = document.getElementById('dots'+s);
+  if(!container) continue;
+  for(let d=1; d<=totalCardScreens; d++){
+    const dot = document.createElement('span');
+    dot.className = 'dot' + (d===s ? ' on' : '');
+    container.appendChild(dot);
+  }
+}
+
+function goTo(step){
+  const current = document.querySelector('.screen.active');
+  const next = document.querySelector(`.screen[data-screen="${step}"]`);
+  if(current === next) return;
+  if(current){
+    current.classList.remove('active');
+    current.classList.add('leaving');
+    current.style.transform = '';
+    setTimeout(()=>{ current.classList.remove('leaving'); }, 420);
+  }
+  setTimeout(()=>{
+    next.classList.add('active');
+    typeLine(step);
+  }, current ? 180 : 0);
+}
+
+let reacted = false;
+function react(){
+  if(reacted) return;
+  reacted = true;
+  goTo('final');
+  spawnHearts(12);
+  spawnSparkles(16);
+  spawnButterflies(2);
+  setTimeout(()=>{ burstConfetti(); }, 250);
+  setTimeout(burstConfetti, 800);
+
+  setTimeout(()=>{
+    const el = document.getElementById('twFinal');
+    const text = "If this made you smile, then it was worth every second.\nHope your day is as lovely as your smile. 🌸✨";
+    el.innerHTML = '';
+    let i = 0;
+    function tick(){
+      if(i <= text.length){
+        el.innerHTML = text.slice(0,i).replace('\n','<br>');
+        i++;
+        setTimeout(tick, 20);
+      }
+    }
+    tick();
+  }, 260);
+}
+
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+let confettiPieces = [];
+const confettiColors = ['#ff9fc0','#e8699a','#ffe9ad','#d9bdff','#ffffff','#ffc9dd'];
+
+function burstConfetti(){
+  for(let i=0;i<140;i++){
+    confettiPieces.push({
+      x: canvas.width/2 + rand(-50,50),
+      y: canvas.height/2 + rand(-20,20),
+      vx: rand(-6.5,6.5),
+      vy: rand(-9.5,-2),
+      size: rand(4,9),
+      color: confettiColors[Math.floor(rand(0,confettiColors.length))],
+      rot: rand(0,360),
+      vr: rand(-9,9),
+      shape: Math.random() > 0.5 ? 'rect' : 'heart',
+      gravity: rand(0.15,0.28),
+      drag: rand(0.988,0.996)
+    });
+  }
+  if(!confettiRunning){ confettiRunning = true; animateConfetti(); }
+}
+let confettiRunning = false;
+function animateConfetti(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  confettiPieces.forEach(p=>{
+    p.vy += p.gravity;
+    p.vx *= p.drag;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rot += p.vr;
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.rotate(p.rot * Math.PI/180);
+    ctx.fillStyle = p.color;
+    if(p.shape==='rect'){
+      ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+    } else {
+      ctx.font = p.size*2+'px serif';
+      ctx.fillText('❤', -p.size, p.size/2);
+    }
+    ctx.restore();
+  });
+  confettiPieces = confettiPieces.filter(p=> p.y < canvas.height + 30);
+  if(confettiPieces.length){
+    requestAnimationFrame(animateConfetti);
+  } else {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    confettiRunning = false;
+  }
+}
+
+let audioCtx = null;
+let musicNodes = null;
+let isPlaying = false;
+
+function buildPad(){
+  const ctx = audioCtx;
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  master.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 1.2);
+
+  const notes = [261.63, 329.63, 392.00, 523.25];
+  const oscs = [];
+  notes.forEach((freq, idx)=>{
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.5 / notes.length;
+
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.12 + idx * 0.03;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = freq * 0.004;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 1200;
+
+    osc.connect(gain);
+    gain.connect(filter);
+    filter.connect(master);
+
+    osc.start();
+    lfo.start();
+    oscs.push(osc, lfo);
+  });
+
+  return { master, oscs };
+}
+
+function toggleMusic(){
+  const btn = document.getElementById('musicToggle');
+  if(!isPlaying){
+    if(!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+    if(!musicNodes){
+      musicNodes = buildPad();
+    } else {
+      musicNodes.master.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 0.8);
+    }
+    isPlaying = true;
+    btn.classList.add('playing');
+    btn.title = 'Pause music';
+  } else {
+    if(musicNodes){
+      musicNodes.master.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+    }
+    isPlaying = false;
+    btn.classList.remove('playing');
+    btn.title = 'Play soft background music';
+  }
+}
+document.getElementById('musicToggle').addEventListener('click', toggleMusic);
+</script>
+</body>
+</html>
 
