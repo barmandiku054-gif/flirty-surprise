@@ -1,871 +1,1020 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>The Coffee Mystery</title>
-<style>
-:root {
-    --coffee-brown: #4A3018;
-    --warm-beige: #F5E6D3;
-    --cream-white: #FFFAF0;
-    --rose-pink: #E8B4B8;
-    --soft-peach: #FFDAB9;
-    --gold: #D4AF37;
-    --warm-white: #FFFDD0;
-    --glass-bg: rgba(255, 255, 255, 0.15);
-    --glass-border: rgba(255, 255, 255, 0.3);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrostatics Formula Puzzle Pro</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    
+    <!-- GSAP for Smooth Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- JS Confetti for Success Effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-}
+    <style>
+        :root {
+            --bg-dark: #05050A;
+            --bg-panel: rgba(25, 25, 35, 0.6);
+            --text-main: #FFFFFF;
+            --text-muted: #8E8E9F;
+            --accent-cyan: #00E5FF;
+            --accent-pink: #FF0055;
+            --accent-gold: #FFD700;
+            --accent-green: #00FF88;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --font-main: 'Inter', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
 
-body, html {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: var(--warm-beige);
-    color: var(--coffee-brown);
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
 
-#bg-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1;
-    background: linear-gradient(-45deg, var(--rose-pink), var(--soft-peach), var(--warm-beige), var(--cream-white));
-    background-size: 400% 400%;
-    animation: aurora 15s ease infinite;
-}
+        /* Ambient Background */
+        #ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 30%, rgba(0, 229, 255, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(255, 0, 85, 0.08) 0%, transparent 50%);
+            filter: blur(60px);
+            transition: background 1s ease;
+        }
 
-@keyframes aurora {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+        /* Glassmorphism */
+        .glass {
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+        }
 
-.cloud {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 100px;
-    filter: blur(20px);
-    animation: float-cloud linear infinite;
-}
+        /* Layout */
+        #sidebar {
+            width: 320px; height: 100%; padding: 20px;
+            display: flex; flex-direction: column; gap: 15px;
+            border-right: 1px solid var(--glass-border);
+            overflow-y: auto; z-index: 10;
+        }
 
-@keyframes float-cloud {
-    0% { transform: translateX(-10vw) scale(1); opacity: 0.3; }
-    50% { opacity: 0.6; }
-    100% { transform: translateX(110vw) scale(1.2); opacity: 0.3; }
-}
+        #main-content {
+            flex: 1; height: 100%; display: flex; flex-direction: column;
+            overflow-y: auto; scroll-behavior: smooth; position: relative;
+        }
 
-.light-ray {
-    position: absolute;
-    top: -50%;
-    left: 50%;
-    width: 200vw;
-    height: 200vh;
-    background: radial-gradient(circle, rgba(255,253,208,0.2) 0%, transparent 60%);
-    transform: translateX(-50%) rotate(30deg);
-    pointer-events: none;
-    mix-blend-mode: overlay;
-    animation: pulse-ray 8s infinite alternate ease-in-out;
-}
+        /* Topbar */
+        #topbar {
+            padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--glass-border); backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 10;
+        }
 
-@keyframes pulse-ray {
-    0% { opacity: 0.4; }
-    100% { opacity: 0.8; }
-}
+        .btn {
+            background: var(--glass-border); color: #fff; border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s;
+        }
+        .btn:hover { background: rgba(255,255,255,0.1); }
+        .btn-primary { background: var(--accent-cyan); color: #000; border: none; }
+        .btn-primary:hover { background: #00b3cc; box-shadow: 0 0 15px var(--accent-cyan); }
+        .btn-success { background: var(--accent-green); color: #000; border: none; }
+        .btn-success:hover { box-shadow: 0 0 15px var(--accent-green); }
 
-canvas#fx-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 2;
-    pointer-events: none;
-}
+        /* Sidebar Topics */
+        .topic-btn {
+            background: transparent; border: none; color: var(--text-muted);
+            text-align: left; padding: 12px 16px; border-radius: 8px; cursor: pointer;
+            font-family: var(--font-main); font-size: 0.9rem; transition: all 0.3s ease;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .topic-btn:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+        .topic-btn.active {
+            background: rgba(0, 229, 255, 0.1); color: var(--accent-cyan);
+            border-left: 3px solid var(--accent-cyan);
+        }
+        .topic-btn.solved { color: var(--accent-green); }
 
-#ui-layer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-}
+        /* Puzzle Area */
+        #hero-section {
+            padding: 40px; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 500px; position: relative;
+        }
+        #canvas-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; opacity: 0.3; pointer-events: none;
+        }
 
-.screen {
-    position: absolute;
-    width: 90%;
-    max-width: 500px;
-    height: auto;
-    max-height: 85vh;
-    padding: 40px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: 30px;
-    box-shadow: var(--glass-shadow);
-    text-align: center;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(20px) scale(0.95);
-    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
+        #title { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; z-index: 1; text-align: center; }
+        #meaning { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 30px; z-index: 1; text-align: center;}
 
-.screen.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-}
+        /* Dropzone & Bank */
+        .puzzle-container {
+            width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 20px; z-index: 1;
+        }
+        .dropzone {
+            min-height: 100px; padding: 20px; border: 2px dashed var(--glass-border);
+            border-radius: 16px; display: flex; flex-wrap: wrap; gap: 15px;
+            align-items: center; justify-content: center; background: rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        .dropzone.success { border-color: var(--accent-green); background: rgba(0, 255, 136, 0.05); }
+        .dropzone.error { border-color: var(--accent-pink); background: rgba(255, 0, 85, 0.05); }
 
-.hidden-completely {
-    display: none !important;
-}
+        .bank {
+            min-height: 80px; padding: 20px; display: flex; flex-wrap: wrap; gap: 15px;
+            align-items: center; justify-content: center;
+        }
 
-h1, h2, h3 {
-    margin-bottom: 20px;
-    line-height: 1.6;
-    text-shadow: 0 2px 10px rgba(255,255,255,0.5);
-}
+        /* Puzzle Pieces */
+        .piece {
+            padding: 15px 25px; border-radius: 12px; cursor: pointer;
+            background: rgba(25, 25, 35, 0.9); border: 1px solid rgba(255,255,255,0.2);
+            font-size: 1.8rem; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); user-select: none;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+        }
+        .piece:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 6px 20px rgba(0, 229, 255, 0.3); border-color: var(--accent-cyan); }
+        .piece:active { transform: scale(0.95); }
+        
+        .katex-display { margin: 0 !important; }
 
-h1 {
-    font-size: 2rem;
-    font-weight: 700;
-}
+        /* Action Buttons */
+        .puzzle-actions { display: flex; gap: 15px; justify-content: center; margin-top: 20px; z-index: 1; }
 
-.glowing-btn {
-    background: linear-gradient(135deg, var(--rose-pink), var(--soft-peach));
-    border: none;
-    padding: 15px 30px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--coffee-brown);
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(232, 180, 184, 0.6);
-    transition: all 0.3s ease;
-    margin-top: 15px;
-    position: relative;
-    overflow: hidden;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-}
+        /* Details Grid (Hidden initially) */
+        #details-grid {
+            display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; padding: 40px; opacity: 0;
+        }
 
-.glowing-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent);
-    transform: skewX(-20deg);
-    animation: button-shine 3s infinite;
-}
+        .card { padding: 24px; display: flex; flex-direction: column; gap: 10px; transition: transform 0.3s ease; }
+        .card:hover { transform: translateY(-5px); }
+        .card h3 { color: var(--accent-gold); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .var-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; }
+        .var-sym { color: var(--accent-cyan); font-family: var(--font-mono); font-weight: bold; }
+        
+        /* Progress Bar */
+        #progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
+        #progress-bar { height: 100%; background: var(--accent-green); width: 0%; transition: width 0.3s ease; }
 
-@keyframes button-shine {
-    0% { left: -100%; }
-    20% { left: 200%; }
-    100% { left: 200%; }
-}
-
-.glowing-btn:hover, .glowing-btn:active {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 0 25px rgba(232, 180, 184, 0.9);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border: 1px solid var(--glass-border);
-}
-
-.btn-secondary::after {
-    display: none;
-}
-
-/* Loading Screen */
-#loading-screen .progress-bar-container {
-    width: 100%;
-    height: 6px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 10px;
-    margin-top: 20px;
-    overflow: hidden;
-}
-
-#loading-screen .progress-bar {
-    width: 0%;
-    height: 100%;
-    background: var(--gold);
-    box-shadow: 0 0 10px var(--gold);
-    animation: load-progress 3s ease-in-out forwards;
-}
-
-@keyframes load-progress {
-    0% { width: 0%; }
-    100% { width: 100%; }
-}
-
-/* Typewriter & Floating Text Effect */
-.typewriter-text {
-    font-size: 1.5rem;
-    font-weight: 600;
-    min-height: 2.5rem;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.water-char {
-    display: inline-block;
-    animation: float-water 2.5s ease-in-out infinite;
-}
-
-@keyframes float-water {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
-}
-
-.cursor {
-    display: inline-block;
-    width: 3px;
-    height: 1.2em;
-    background-color: var(--coffee-brown);
-    animation: blink 0.8s infinite;
-    vertical-align: text-bottom;
-    margin-left: 2px;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
-
-/* Multi-Line Story System with Colors & Delays */
-.story-slide {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-.story-slide.active-slide {
-    display: flex;
-}
-
-.line-container {
-    opacity: 0;
-    margin-bottom: 15px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    text-shadow: 0 2px 10px rgba(255,255,255,0.6);
-}
-
-.water-text {
-    display: block;
-    animation: float-water-p 3s ease-in-out infinite;
-}
-
-@keyframes float-water-p {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-5px); }
-}
-
-/* Colors */
-.color-brown { color: #4A3018; }
-.color-rose { color: #B56576; }
-.color-gold { color: #C99700; text-shadow: 0 0 8px rgba(212,175,55,0.4); }
-.color-peach { color: #D98A6C; }
-.color-dark { color: #2B1810; }
-
-/* Entrance Animations */
-@keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes slideRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes zoomIn { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
-@keyframes dropDown { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
-
-.active-slide .anim-slide-up, .screen.active .anim-slide-up { animation: slideUp 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.active-slide .anim-slide-left, .screen.active .anim-slide-left { animation: slideLeft 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.active-slide .anim-slide-right, .screen.active .anim-slide-right { animation: slideRight 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.active-slide .anim-zoom, .screen.active .anim-zoom { animation: zoomIn 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.active-slide .anim-drop, .screen.active .anim-drop { animation: dropDown 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-
-/* Dynamic Delays */
-.delay-1 { animation-delay: 0.5s !important; }
-.delay-2 { animation-delay: 1.8s !important; }
-.delay-3 { animation-delay: 3.1s !important; }
-.delay-4 { animation-delay: 4.4s !important; }
-.delay-5 { animation-delay: 5.7s !important; }
-.delay-6 { animation-delay: 6.8s !important; }
-
-/* Big Coffee Icon */
-.giant-coffee {
-    font-size: 5rem;
-    margin-bottom: 20px;
-    animation: float-coffee 3s ease-in-out infinite;
-    cursor: pointer;
-    text-shadow: 0 0 20px rgba(255,255,255,0.8);
-    display: inline-block;
-}
-
-@keyframes float-coffee {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-15px) rotate(5deg); }
-}
-
-/* Floating Elements (CSS) */
-.floating-item {
-    position: absolute;
-    pointer-events: none;
-    z-index: 5;
-    animation: float-upwards linear forwards;
-    opacity: 0.8;
-}
-
-@keyframes float-upwards {
-    0% { transform: translateY(100vh) rotate(0deg) scale(0.5); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { transform: translateY(-20vh) rotate(360deg) scale(1.5); opacity: 0; }
-}
-
-/* Floating Compliments */
-.compliment-toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(50px);
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    padding: 12px 25px;
-    border-radius: 30px;
-    color: var(--coffee-brown);
-    font-weight: 600;
-    box-shadow: var(--glass-shadow);
-    z-index: 20;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.5s ease;
-}
-.compliment-toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-
-/* Neon Text */
-.neon-text {
-    color: var(--coffee-brown);
-    text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--gold);
-}
-
-/* Button Container */
-.btn-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    margin-top: 20px;
-    opacity: 0;
-}
-
-@media (min-width: 600px) {
-    .btn-container {
-        flex-direction: row;
-        justify-content: center;
-    }
-}
-</style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    </style>
 </head>
 <body>
+    <div id="ambient-bg"></div>
 
-<audio id="bg-music" loop autoplay>
-    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
-</audio>
-
-<div id="bg-container">
-    <div class="light-ray"></div>
-</div>
-<canvas id="fx-canvas"></canvas>
-
-<div id="compliment-toast" class="compliment-toast"></div>
-
-<div id="ui-layer">
-
-    <div id="loading-screen" class="screen active">
-        <div class="giant-coffee" style="animation-duration: 2s;">☕</div>
-        <h2 class="color-brown">Brewing Something Special...</h2>
-        <div class="progress-bar-container">
-            <div class="progress-bar"></div>
-        </div>
+    <!-- Sidebar -->
+    <div id="sidebar" class="glass">
+        <h2 style="font-weight:800; color:var(--accent-cyan); font-size:1.5rem; margin-bottom:10px;">⚡ PuzzlePro</h2>
+        <div id="progress-container"><div id="progress-bar"></div></div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:15px;" id="progress-text">0/29 Solved</p>
+        <input type="text" id="search" placeholder="Search topic..." style="width:100%; padding:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.05); color:#fff; margin-bottom:10px; font-family:var(--font-main);">
+        <div id="topic-list"></div>
     </div>
 
-    <div id="welcome-screen" class="screen">
-        <div id="typewriter-container" style="min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-            <div id="line1" class="typewriter-text color-brown"></div>
-            <div id="line2" class="typewriter-text color-rose"></div>
-            <div id="line3" class="typewriter-text color-gold"></div>
+    <!-- Main Content -->
+    <div id="main-content">
+        <div id="topbar">
+            <div>
+                <button class="btn" onclick="prevTopic()">← Prev</button>
+                <button class="btn" onclick="nextTopic()">Next →</button>
+            </div>
+            <div>
+                <span style="color:var(--text-muted); font-size:0.9rem; margin-right:15px;" id="status-badge">Solve to unlock info</span>
+                <button class="btn btn-primary" onclick="showHint()" id="hint-btn">💡 Hint</button>
+            </div>
         </div>
-        <button id="btn-continue-welcome" class="glowing-btn anim-zoom" style="opacity: 0; pointer-events: none; transition: opacity 1s;">☕ Continue</button>
-    </div>
 
-    <div id="story-screen" class="screen">
-        <div id="story-1" class="story-slide active-slide">
-            <div class="line-container delay-1 anim-slide-up color-brown"><span class="water-text">Imagine this...</span></div>
-            <div class="line-container delay-2 anim-slide-left color-rose"><span class="water-text">A cozy café.</span></div>
-            <div class="line-container delay-3 anim-zoom color-peach"><span class="water-text">Soft music.</span></div>
-            <div class="line-container delay-4 anim-slide-right color-gold"><span class="water-text">Fresh coffee.</span></div>
-            <div class="line-container delay-5 anim-drop color-dark"><span class="water-text">Good conversation.<br>Two people laughing.</span></div>
-        </div>
-        <div id="story-2" class="story-slide">
-            <div class="line-container delay-1 anim-zoom color-gold"><span class="water-text">Sometimes...</span></div>
-            <div class="line-container delay-2 anim-slide-right color-brown"><span class="water-text">the best conversations...</span></div>
-            <div class="line-container delay-3 anim-drop color-rose"><span class="water-text">don't happen through endless texting.</span></div>
-            <div class="line-container delay-4 anim-slide-up color-dark"><span class="water-text">They happen over coffee.</span></div>
-        </div>
-        <div id="story-3" class="story-slide">
-            <div class="line-container delay-1 anim-slide-left color-peach"><span class="water-text">No interviews.</span></div>
-            <div class="line-container delay-2 anim-slide-right color-rose"><span class="water-text">No awkward silence.</span></div>
-            <div class="line-container delay-3 anim-zoom color-brown"><span class="water-text">No expectations.</span></div>
-            <div class="line-container delay-4 anim-drop color-gold"><span class="water-text">Just coffee. Good conversation.</span></div>
-            <div class="line-container delay-5 anim-slide-up color-dark"><span class="water-text">And seeing where the moment takes us.</span></div>
-        </div>
-        <div id="story-4" class="story-slide">
-            <div class="line-container delay-1 anim-zoom color-dark"><span class="water-text">Life is full of random adventures.</span></div>
-            <div class="line-container delay-2 anim-drop color-peach"><span class="water-text">Maybe...</span></div>
-            <div class="line-container delay-3 anim-slide-left color-gold"><span class="water-text">one cup of coffee...</span></div>
-            <div class="line-container delay-4 anim-slide-up color-rose"><span class="water-text">could become one of them.</span></div>
-        </div>
-        <div id="story-5" class="story-slide">
-            <div class="line-container delay-1 anim-slide-right color-brown"><span class="water-text">So...</span></div>
-            <div class="line-container delay-2 anim-slide-left color-dark"><span class="water-text">instead of wondering forever...</span></div>
-            <div class="line-container delay-3 anim-zoom color-peach"><span class="water-text">I thought...</span></div>
-            <div class="line-container delay-4 anim-drop color-gold"><span class="water-text">I'd simply ask.</span></div>
-        </div>
-        
-        <button id="btn-next-story" class="glowing-btn anim-zoom" style="margin-top: 30px; opacity: 0; pointer-events: none; transition: opacity 0.5s;">Next ✨</button>
-    </div>
+        <!-- Hero: Puzzle Area -->
+        <div id="hero-section">
+            <canvas id="physics-canvas"></canvas>
+            <h1 id="title" class="gsap-anim">Loading...</h1>
+            <p id="meaning" class="gsap-anim">...</p>
+            
+            <div class="puzzle-container gsap-anim">
+                <div class="dropzone" id="dropzone"></div>
+                <div class="bank" id="bank"></div>
+            </div>
 
-    <div id="final-screen" class="screen">
-        <div id="coffee-trigger" class="giant-coffee delay-1 anim-zoom" style="opacity: 0;">☕</div>
-        <div class="line-container delay-2 anim-drop">
-            <h1 class="neon-text color-gold water-text">Would you like to grab a coffee sometime?</h1>
+            <div class="puzzle-actions gsap-anim">
+                <button class="btn" onclick="resetPuzzle()">↺ Reset</button>
+                <button class="btn btn-success" onclick="checkAnswer()" id="check-btn">✔ Check Answer</button>
+            </div>
         </div>
-        
-        <div class="line-container delay-3 anim-slide-up color-rose" style="margin-top: -10px;">
-            <span class="water-text" style="font-size: 1rem; font-weight: 500;">
-                No pressure.<br>
-                No expectations.<br>
-                Just coffee.<br>
-                Good conversation.<br>
-                And hopefully... a few laughs.
-            </span>
-        </div>
-        
-        <div class="btn-container delay-4 anim-zoom">
-            <button id="btn-yes" class="glowing-btn">☕ Sounds Fun</button>
-            <button id="btn-no" class="glowing-btn btn-secondary">😊 Maybe Another Time</button>
+
+        <!-- Details Grid (Unlocks after solving) -->
+        <div id="details-grid" class="grid-layout">
+            <div class="card glass">
+                <h3>Variables</h3>
+                <div id="variables-list"></div>
+            </div>
+            <div class="card glass">
+                <h3>Physical Quantities</h3>
+                <p><strong>SI Unit:</strong> <span id="si-unit" style="color:var(--accent-cyan)"></span></p>
+                <p><strong>Dimensions:</strong> <span id="dimensions" style="font-family:var(--font-mono)"></span></p>
+            </div>
+            <div class="card glass">
+                <h3>NEET / JEE Shortcut</h3>
+                <p id="shortcut" style="color:var(--accent-pink); font-weight:600;"></p>
+            </div>
+            <div class="card glass">
+                <h3>Memory Trick</h3>
+                <p id="memory-trick" style="font-style:italic;"></p>
+            </div>
+            <div class="card glass">
+                <h3>Important Notes</h3>
+                <ul id="notes" style="padding-left:20px; color:var(--text-muted);"></ul>
+            </div>
+            <div class="card glass">
+                <h3>Common Mistakes</h3>
+                <p id="mistakes" style="color:#ff5555;"></p>
+            </div>
         </div>
     </div>
-
-    <div id="response-screen" class="screen">
-        <div id="response-icon" class="giant-coffee delay-1 anim-zoom" style="opacity: 0;">💖</div>
-        <div id="response-text"></div>
-    </div>
-
-</div>
 
 <script>
-// Configurations & State
-const bgMusic = document.getElementById('bg-music');
-const canvas = document.getElementById('fx-canvas');
-const ctx = canvas.getContext('2d');
-let width, height;
-let particles = [];
-let storyIndex = 1;
-let secretCount = 0;
-
-// Resize Canvas
-function resizeCanvas() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-// --- Audio Management (Invisible Autoplay Handling) ---
-bgMusic.volume = 0.5;
-
-function tryPlayMusic() {
-    const playPromise = bgMusic.play();
-    if (playPromise !== undefined) {
-        playPromise.catch(error => {
-            // Autoplay blocked by browser. It will start on the first click.
-        });
+/**
+ * PUZZLE ENGINE DATASET
+ * Re-engineered from static formulas into dynamic puzzle components.
+ */
+const topics = [
+    {
+        id: 1, title: "Coulomb's Law", 
+        meaning: "Electrostatic force between two stationary point charges.",
+        puzzle: {
+            parts: ["F", "=", "\\frac{1}{4\\pi\\epsilon_0}", "\\frac{q_1 q_2}{r^2}"],
+            distractors: ["\\frac{q_1}{r}", "r^3"]
+        },
+        vars: [{s: "F", d: "Force"}, {s: "q_1, q_2", d: "Charges"}, {s: "r", d: "Distance"}, {s: "\\epsilon_0", d: "Permittivity"}],
+        unit: "Newton (N)", dim: "[M L T^{-2}]",
+        shortcut: "F ∝ 1/r². If distance is halved, force becomes 4 times.",
+        memory: "Force falls fast! (r squared in bottom)",
+        mistakes: "Forgetting to square the distance 'r'.",
+        notes: ["Central force.", "Obeys Newton's 3rd Law."],
+        viz: "coulomb"
+    },
+    {
+        id: 2, title: "Force in Medium",
+        meaning: "Force is reduced when charges are placed in a dielectric medium.",
+        puzzle: {
+            parts: ["F_m", "=", "\\frac{F_{vacuum}}{K}"],
+            distractors: ["K \\cdot F_{vacuum}", "\\epsilon_0"]
+        },
+        vars: [{s: "K", d: "Dielectric constant"}, {s: "\\epsilon", d: "Permittivity of medium"}],
+        unit: "Newton (N)", dim: "[M L T^{-2}]",
+        shortcut: "Force in water (K≈80) is 80 times weaker than in air.",
+        memory: "Medium mitigates the force (divide by K).",
+        mistakes: "Multiplying by K instead of dividing.",
+        notes: ["K for air = 1", "K for metals = ∞"],
+        viz: "medium"
+    },
+    {
+        id: 3, title: "Coulomb's Law (Vector)",
+        meaning: "Specifies direction of force along with magnitude.",
+        puzzle: {
+            parts: ["\\vec{F}_{12}", "=", "\\frac{1}{4\\pi\\epsilon_0}", "\\frac{q_1 q_2}{r^3}", "\\vec{r}_{12}"],
+            distractors: ["\\frac{q_1 q_2}{r^2}", "\\hat{r}_{21}"]
+        },
+        vars: [{s: "\\vec{F}_{12}", d: "Force on 1 due to 2"}, {s: "\\vec{r}_{12}", d: "Position vector"}],
+        unit: "Newton (N)", dim: "[M L T^{-2}]",
+        shortcut: "Notice r³ below because \\vec{r} above adds an 'r' magnitude.",
+        memory: "Vector needs a full arrow and r³ below.",
+        mistakes: "Using r² when using the full position vector \\vec{r}.",
+        notes: ["\\vec{F}_{12} = -\\vec{F}_{21}"],
+        viz: "vector"
+    },
+    {
+        id: 4, title: "Electric Field Definition",
+        meaning: "Force experienced per unit positive test charge.",
+        puzzle: {
+            parts: ["\\vec{E}", "=", "\\frac{\\vec{F}}{q_0}"],
+            distractors: ["\\vec{F} \\cdot q_0", "r^2"]
+        },
+        vars: [{s: "\\vec{E}", d: "Electric Field"}, {s: "\\vec{F}", d: "Force"}, {s: "q_0", d: "Test charge"}],
+        unit: "N/C or V/m", dim: "[M L T^{-3} A^{-1}]",
+        shortcut: "F = qE. Just like W = mg in gravity.",
+        memory: "E is the Environment that pushes the charge.",
+        mistakes: "Assuming test charge q0 modifies the field.",
+        notes: ["Vector quantity.", "Direction is same as force on a positive charge."],
+        viz: "field"
+    },
+    {
+        id: 5, title: "E-Field: Point Charge",
+        meaning: "Field created by a single source charge 'q' at distance 'r'.",
+        puzzle: {
+            parts: ["E", "=", "\\frac{1}{4\\pi\\epsilon_0}", "\\frac{q}{r^2}"],
+            distractors: ["\\frac{q}{r}", "q_1 q_2"]
+        },
+        vars: [{s: "E", d: "Electric Field"}, {s: "q", d: "Source charge"}, {s: "r", d: "Distance"}],
+        unit: "N/C", dim: "[M L T^{-3} A^{-1}]",
+        shortcut: "Inverse square law (1/r²).",
+        memory: "Same as Coulomb's, just drop one 'q'.",
+        mistakes: "Confusing source charge 'q' with test charge 'q0'.",
+        notes: ["Radially outward for +q", "Radially inward for -q"],
+        viz: "point_charge"
+    },
+    {
+        id: 6, title: "Superposition of E-Fields",
+        meaning: "Total field is the vector sum of individual fields.",
+        puzzle: {
+            parts: ["\\vec{E}_{net}", "=", "\\sum_{i=1}^{n}", "\\vec{E}_i"],
+            distractors: ["\\prod_{i=1}^{n}", "E_1 \\times E_2"]
+        },
+        vars: [{s: "\\vec{E}_{net}", d: "Total Field"}],
+        unit: "N/C", dim: "[M L T^{-3} A^{-1}]",
+        shortcut: "For symmetric setups with equal charges, E_net = 0.",
+        memory: "Superposition = Super Vector Addition",
+        mistakes: "Adding magnitudes directly instead of vectors.",
+        notes: ["Requires vector resolution."],
+        viz: "superposition"
+    },
+    {
+        id: 7, title: "Electric Field Lines",
+        meaning: "Number of field lines is proportional to charge magnitude.",
+        puzzle: {
+            parts: ["N", "\\propto", "|q|"],
+            distractors: ["=", "\\frac{1}{q}"]
+        },
+        vars: [{s: "N", d: "Number of lines"}, {s: "q", d: "Charge"}],
+        unit: "Dimensionless", dim: "None",
+        shortcut: "Denser lines = Stronger field.",
+        memory: "Lines flow from Positive to Negative.",
+        mistakes: "Drawing field lines forming closed loops.",
+        notes: ["Tangent gives field direction."],
+        viz: "lines"
+    },
+    {
+        id: 8, title: "Electric Dipole",
+        meaning: "Two equal and opposite charges separated by a small distance.",
+        puzzle: {
+            parts: ["+q", "\\xleftarrow{2a}", "-q"],
+            distractors: ["+q \\dots +q", "a"]
+        },
+        vars: [{s: "+q, -q", d: "Charges"}, {s: "2a", d: "Separation"}],
+        unit: "Conceptual", dim: "None",
+        shortcut: "Treat the center as the origin for math.",
+        memory: "Di-pole = Two poles.",
+        mistakes: "Taking distance as 'a' instead of '2a'.",
+        notes: ["Net charge is zero.", "Net field is NOT zero."],
+        viz: "dipole_sys"
+    },
+    {
+        id: 9, title: "Dipole Moment",
+        meaning: "Measure of the strength of the dipole.",
+        puzzle: {
+            parts: ["\\vec{p}", "=", "q", "\\times", "2\\vec{a}"],
+            distractors: ["q \\times a", "\\frac{q}{2a}"]
+        },
+        vars: [{s: "\\vec{p}", d: "Dipole Moment"}, {s: "2\\vec{a}", d: "Vector from -q to +q"}],
+        unit: "C·m", dim: "[L T A]",
+        shortcut: "Direction is Negative to Positive (- to +).",
+        memory: "p = q × dist.",
+        mistakes: "Assuming direction is + to - (that's E-field).",
+        notes: ["Vector quantity."],
+        viz: "dipole_moment"
+    },
+    {
+        id: 10, title: "Electric Potential",
+        meaning: "Work done in bringing a unit charge from infinity.",
+        puzzle: {
+            parts: ["V", "=", "\\frac{W}{q}"],
+            distractors: ["W \\times q", "\\frac{q}{W}"]
+        },
+        vars: [{s: "V", d: "Potential"}, {s: "W", d: "Work done"}, {s: "q", d: "Charge"}],
+        unit: "Volt (V)", dim: "[M L^2 T^{-3} A^{-1}]",
+        shortcut: "1 Volt = 1 Joule per Coulomb.",
+        memory: "Voltage is the Work per charge.",
+        mistakes: "Treating potential as a vector.",
+        notes: ["Scalar quantity.", "V at infinity is 0."],
+        viz: "potential"
+    },
+    {
+        id: 11, title: "V due to Point Charge",
+        meaning: "Potential created by charge q at distance r.",
+        puzzle: {
+            parts: ["V", "=", "\\frac{1}{4\\pi\\epsilon_0}", "\\frac{q}{r}"],
+            distractors: ["\\frac{q}{r^2}", "r^2"]
+        },
+        vars: [{s: "V", d: "Potential"}, {s: "r", d: "Distance"}],
+        unit: "Volt (V)", dim: "[M L^2 T^{-3} A^{-1}]",
+        shortcut: "V ∝ 1/r. Keep the sign of q!",
+        memory: "V has one 'r' in the denominator.",
+        mistakes: "Forgetting the negative sign for negative charges.",
+        notes: ["Scalar addition for multiple charges."],
+        viz: "point_charge"
+    },
+    {
+        id: 12, title: "Potential Energy",
+        meaning: "Energy stored in a system of charges.",
+        puzzle: {
+            parts: ["U", "=", "\\frac{1}{4\\pi\\epsilon_0}", "\\frac{q_1 q_2}{r}"],
+            distractors: ["\\frac{q_1 q_2}{r^2}", "E"]
+        },
+        vars: [{s: "U", d: "Potential Energy"}],
+        unit: "Joule (J)", dim: "[M L^2 T^{-2}]",
+        shortcut: "Like charges = positive U (repulsion).",
+        memory: "U = q * V",
+        mistakes: "Not multiplying signs of charges.",
+        notes: ["Scalar quantity."],
+        viz: "coulomb"
+    },
+    {
+        id: 13, title: "Potential Gradient",
+        meaning: "Relation between Electric Field and Potential.",
+        puzzle: {
+            parts: ["E", "=", "-", "\\frac{dV}{dr}"],
+            distractors: ["+", "\\frac{dr}{dV}"]
+        },
+        vars: [{s: "E", d: "Electric field"}, {s: "dV/dr", d: "Potential gradient"}],
+        unit: "V/m", dim: "[M L T^{-3} A^{-1}]",
+        shortcut: "Electric field points to DECREASING potential.",
+        memory: "E is the negative slope of V.",
+        mistakes: "Forgetting the negative sign.",
+        notes: ["E is perpendicular to equipotential lines."],
+        viz: "gradient"
+    },
+    {
+        id: 14, title: "Equipotential Surface Work",
+        meaning: "Work done moving a charge on an equipotential surface.",
+        puzzle: {
+            parts: ["W", "=", "q \\Delta V", "=", "0"],
+            distractors: ["q V", "\\infty"]
+        },
+        vars: [{s: "W", d: "Work"}, {s: "\\Delta V", d: "Potential Difference = 0"}],
+        unit: "Joule (J)", dim: "[M L^2 T^{-2}]",
+        shortcut: "Always ZERO work.",
+        memory: "Equi = Equal, so Delta V = 0.",
+        mistakes: "Thinking E=0 on the surface (E is perpendicular, not zero).",
+        notes: ["Two equipotential surfaces never intersect."],
+        viz: "equipotential"
+    },
+    {
+        id: 15, title: "Electric Flux",
+        meaning: "Field lines passing normally through an area.",
+        puzzle: {
+            parts: ["\\Phi_E", "=", "\\vec{E} \\cdot \\vec{A}", "=", "E A \\cos\\theta"],
+            distractors: ["E A \\sin\\theta", "\\vec{E} \\times \\vec{A}"]
+        },
+        vars: [{s: "\\Phi_E", d: "Flux"}, {s: "\\vec{A}", d: "Area vector"}],
+        unit: "N·m²/C", dim: "[M L^3 T^{-3} A^{-1}]",
+        shortcut: "Area vector is normal to the surface.",
+        memory: "Dot product uses cosine.",
+        mistakes: "Using sine instead of cosine.",
+        notes: ["Scalar quantity."],
+        viz: "flux"
+    },
+    {
+        id: 16, title: "Gauss's Law",
+        meaning: "Total net flux equals enclosed charge over ε0.",
+        puzzle: {
+            parts: ["\\oint \\vec{E} \\cdot d\\vec{A}", "=", "\\frac{q_{enclosed}}{\\epsilon_0}"],
+            distractors: ["q_{total}", "\\epsilon_0 q_{enclosed}"]
+        },
+        vars: [{s: "q_{enclosed}", d: "Charge INSIDE surface"}],
+        unit: "N·m²/C", dim: "[M L^3 T^{-3} A^{-1}]",
+        shortcut: "Outside charges contribute ZERO to net flux.",
+        memory: "Flux out = Stuff inside / ε0.",
+        mistakes: "Using total charge instead of enclosed.",
+        notes: ["True for any closed surface."],
+        viz: "gauss"
+    },
+    {
+        id: 17, title: "E-Field: Infinite Line",
+        meaning: "Field by an infinitely long straight charged wire.",
+        puzzle: {
+            parts: ["E", "=", "\\frac{\\lambda}{2\\pi\\epsilon_0 r}"],
+            distractors: ["\\frac{\\lambda}{4\\pi\\epsilon_0 r^2}", "\\sigma"]
+        },
+        vars: [{s: "\\lambda", d: "Linear charge density (C/m)"}],
+        unit: "N/C", dim: "[M L T^{-3} A^{-1}]",
+        shortcut: "Drops off as 1/r, NOT 1/r².",
+        memory: "Line is 1D, so r is power 1.",
+        mistakes: "Using inverse square law.",
+        notes: ["Derived using cylindrical Gaussian surface."],
+        viz: "line_charge"
+    },
+    {
+        id: 18, title: "E-Field: Infinite Sheet",
+        meaning: "Field generated by a thin infinite sheet.",
+        puzzle: {
+            parts: ["E", "=", "\\frac{\\sigma}{2\\epsilon_0}"],
+            distractors: ["\\frac{\\sigma}{\\epsilon_0}", "r"]
+        },
+        vars: [{s: "\\sigma", d: "Surface charge density"}],
+        unit: "N/C", dim: "[M L T^{-3} A^{-1}]",
+        shortcut: "Field is UNIFORM. Does not depend on 'r'.",
+        memory: "Infinite sheet, infinite reach (no 'r').",
+        mistakes: "Adding 'r' to the formula.",
+        notes: ["For thick conductor, E = σ/ε0."],
+        viz: "sheet"
+    },
+    {
+        id: 19, title: "E-Field: Hollow Shell (Inside)",
+        meaning: "Field inside a hollow charged conductor.",
+        puzzle: {
+            parts: ["E_{inside}", "=", "0"],
+            distractors: ["\\frac{q}{r^2}", "V"]
+        },
+        vars: [{s: "E_{inside}", d: "Electric field inside"}],
+        unit: "N/C", dim: "-",
+        shortcut: "Inside a hollow conductor, E = 0 always.",
+        memory: "Shell protects the inside!",
+        mistakes: "Thinking field inside is non-zero.",
+        notes: ["Potential inside is constant (V = V_surface)."],
+        viz: "shell"
+    },
+    {
+        id: 20, title: "Conductors Property",
+        meaning: "Direction of E-field at conductor surface.",
+        puzzle: {
+            parts: ["\\vec{E}_{surface}", "\\perp", "Surface"],
+            distractors: ["\\parallel", "0"]
+        },
+        vars: [{s: "\\perp", d: "Perpendicular"}],
+        unit: "N/C", dim: "-",
+        shortcut: "Field lines enter/exit at 90 degrees.",
+        memory: "Conductors reject angled fields.",
+        mistakes: "Assuming field can have a tangential component.",
+        notes: ["Charge resides only on outer surface."],
+        viz: "shell"
+    },
+    {
+        id: 21, title: "Capacitance",
+        meaning: "Ability to store charge per unit voltage.",
+        puzzle: {
+            parts: ["C", "=", "\\frac{Q}{V}"],
+            distractors: ["Q \\times V", "\\frac{V}{Q}"]
+        },
+        vars: [{s: "C", d: "Capacitance"}, {s: "Q", d: "Charge"}],
+        unit: "Farad (F)", dim: "[M^{-1} L^{-2} T^4 A^2]",
+        shortcut: "C depends on geometry, NOT on Q or V.",
+        memory: "C = Q/V (Cute = Quail / Vulture)",
+        mistakes: "Thinking C increases if Q increases.",
+        notes: ["1 Farad is huge. Use μF."],
+        viz: "capacitor"
+    },
+    {
+        id: 22, title: "Parallel Plate Capacitor",
+        meaning: "Capacitance of two parallel plates.",
+        puzzle: {
+            parts: ["C", "=", "\\frac{\\epsilon_0 A}{d}"],
+            distractors: ["\\frac{d}{\\epsilon_0 A}", "r^2"]
+        },
+        vars: [{s: "A", d: "Area"}, {s: "d", d: "Distance"}],
+        unit: "Farad (F)", dim: "[M^{-1} L^{-2} T^4 A^2]",
+        shortcut: "Increase Area or decrease distance to increase C.",
+        memory: "Epsilon-naught A over d.",
+        mistakes: "Using radius instead of area.",
+        notes: ["Electric field inside is uniform."],
+        viz: "capacitor"
+    },
+    {
+        id: 23, title: "Effect of Dielectric",
+        meaning: "Dielectric increases capacitance by factor K.",
+        puzzle: {
+            parts: ["C'", "=", "K", "C_0"],
+            distractors: ["\\frac{C_0}{K}", "\\epsilon_0"]
+        },
+        vars: [{s: "K", d: "Dielectric constant"}],
+        unit: "Farad (F)", dim: "-",
+        shortcut: "Dielectrics ALWAYS INCREASE capacitance.",
+        memory: "Dielectric multiplies capacity.",
+        mistakes: "Dividing by K.",
+        notes: ["K > 1 always."],
+        viz: "capacitor"
+    },
+    {
+        id: 24, title: "Capacitors in Series",
+        meaning: "Equivalent capacitance decreases.",
+        puzzle: {
+            parts: ["\\frac{1}{C_{eq}}", "=", "\\frac{1}{C_1}", "+", "\\frac{1}{C_2}"],
+            distractors: ["C_1 + C_2", "-"]
+        },
+        vars: [{s: "C_{eq}", d: "Eq. Capacitance"}],
+        unit: "Farad (F)", dim: "-",
+        shortcut: "Same formula as parallel resistors!",
+        memory: "Series Capacitors = Parallel Resistors.",
+        mistakes: "Forgetting to invert final answer.",
+        notes: ["Charge (Q) is SAME on all."],
+        viz: "series"
+    },
+    {
+        id: 25, title: "Capacitors in Parallel",
+        meaning: "Equivalent capacitance increases.",
+        puzzle: {
+            parts: ["C_{eq}", "=", "C_1", "+", "C_2"],
+            distractors: ["\\frac{1}{C_1} + \\frac{1}{C_2}", "\\times"]
+        },
+        vars: [{s: "C_{eq}", d: "Eq. Capacitance"}],
+        unit: "Farad (F)", dim: "-",
+        shortcut: "Just add them up.",
+        memory: "Parallel Capacitors = Series Resistors.",
+        mistakes: "Using reciprocal formula.",
+        notes: ["Voltage (V) is SAME across all."],
+        viz: "parallel"
+    },
+    {
+        id: 26, title: "Energy in Capacitor",
+        meaning: "Energy stored in the electric field.",
+        puzzle: {
+            parts: ["U", "=", "\\frac{1}{2} C V^2"],
+            distractors: ["C V", "\\frac{1}{2} Q^2 V"]
+        },
+        vars: [{s: "U", d: "Energy"}],
+        unit: "Joule (J)", dim: "[M L^2 T^{-2}]",
+        shortcut: "Use 1/2 CV² for constant voltage.",
+        memory: "Looks like kinetic energy (1/2 mv²).",
+        mistakes: "Forgetting the 1/2 factor.",
+        notes: ["Also U = Q²/2C"],
+        viz: "capacitor"
+    },
+    {
+        id: 27, title: "Energy Density",
+        meaning: "Energy stored per unit volume.",
+        puzzle: {
+            parts: ["u", "=", "\\frac{1}{2} \\epsilon_0 E^2"],
+            distractors: ["\\frac{1}{2} C V^2", "\\frac{E^2}{\\epsilon_0}"]
+        },
+        vars: [{s: "u", d: "Energy density"}, {s: "E", d: "E-field"}],
+        unit: "J/m³", dim: "[M L^{-1} T^{-2}]",
+        shortcut: "Proportional to SQUARE of E-field.",
+        memory: "u = 1/2 epsilon E-squared.",
+        mistakes: "Confusing total energy U with density u.",
+        notes: ["Valid for ANY electric field."],
+        viz: "density"
+    },
+    {
+        id: 28, title: "Electrostatic Pressure",
+        meaning: "Outward pressure on a charged conductor.",
+        puzzle: {
+            parts: ["P", "=", "\\frac{\\sigma^2}{2\\epsilon_0}"],
+            distractors: ["\\frac{\\sigma}{\\epsilon_0}", "\\frac{1}{2} \\epsilon_0"]
+        },
+        vars: [{s: "P", d: "Pressure"}, {s: "\\sigma", d: "Surface charge density"}],
+        unit: "N/m²", dim: "[M L^{-1} T^{-2}]",
+        shortcut: "Same formula as Energy Density mathematically.",
+        memory: "Sigma squared over 2 epsilon.",
+        mistakes: "Using total charge.",
+        notes: ["Force is always outward."],
+        viz: "pressure"
+    },
+    {
+        id: 29, title: "Common Potential",
+        meaning: "When connected, charge flows until potentials equalize.",
+        puzzle: {
+            parts: ["V_c", "=", "\\frac{C_1 V_1 + C_2 V_2}{C_1 + C_2}"],
+            distractors: ["C_1 V_1 - C_2 V_2", "\\frac{V_1 + V_2}{2}"]
+        },
+        vars: [{s: "V_c", d: "Common Potential"}],
+        unit: "Volt (V)", dim: "[M L^2 T^{-3} A^{-1}]",
+        shortcut: "Total charge divided by total capacitance.",
+        memory: "Weighted average of voltages.",
+        mistakes: "Assuming energy is conserved (it is lost as heat).",
+        notes: ["Charge is conserved."],
+        viz: "sharing"
     }
-}
-
-// Attempt to play on load
-window.addEventListener('DOMContentLoaded', tryPlayMusic);
-window.addEventListener('load', tryPlayMusic);
-
-// Browsers block audio until the user interacts with the document.
-// This ensures the music starts seamlessly the moment they click anywhere.
-const startAudioOnInteraction = () => {
-    if (bgMusic.paused) {
-        bgMusic.play();
-    }
-};
-document.body.addEventListener('click', startAudioOnInteraction, { once: true });
-document.body.addEventListener('touchstart', startAudioOnInteraction, { once: true });
-
-// --- Screen Management ---
-function switchScreen(hideId, showId) {
-    const hideEl = document.getElementById(hideId);
-    const showEl = document.getElementById(showId);
-    hideEl.classList.remove('active');
-    setTimeout(() => {
-        hideEl.classList.add('hidden-completely');
-        showEl.classList.remove('hidden-completely');
-        // Force reflow
-        void showEl.offsetWidth;
-        showEl.classList.add('active');
-        
-        // Show next button when story slide appears
-        if(showId === 'story-screen') {
-            triggerStoryNextButton();
-        }
-    }, 800);
-}
-
-// --- Loading Sequence ---
-setTimeout(() => {
-    switchScreen('loading-screen', 'welcome-screen');
-    setTimeout(runWelcomeTypewriter, 1000);
-}, 3000);
-
-// --- Typewriter Effect with Water Flow Animation ---
-async function typeText(elementId, text, speed = 60) {
-    const el = document.getElementById(elementId);
-    el.innerHTML = '';
-    const cursor = document.createElement('span');
-    cursor.className = 'cursor';
-    el.appendChild(cursor);
-    
-    // Convert string to array to correctly handle emojis like 👋
-    const chars = Array.from(text);
-    
-    for (let i = 0; i < chars.length; i++) {
-        let char = chars[i];
-        const charNode = document.createElement('span');
-        charNode.className = 'water-char';
-        charNode.innerHTML = char === ' ' ? '&nbsp;' : char;
-        // Stagger the animation delay to create a rippling water effect
-        charNode.style.animationDelay = `${i * 0.08}s`;
-        
-        el.insertBefore(charNode, cursor);
-        await new Promise(r => setTimeout(r, speed));
-    }
-    cursor.remove();
-}
-
-async function runWelcomeTypewriter() {
-    await typeText('line1', 'Hey 👋', 80);
-    await new Promise(r => setTimeout(r, 1200));
-    await typeText('line2', 'I made something fun.', 60);
-    await new Promise(r => setTimeout(r, 1200));
-    await typeText('line3', 'I hope it makes you smile.', 60);
-    await new Promise(r => setTimeout(r, 800));
-    
-    const btn = document.getElementById('btn-continue-welcome');
-    btn.style.pointerEvents = 'auto';
-    btn.style.opacity = '1';
-}
-
-document.getElementById('btn-continue-welcome').addEventListener('click', () => {
-    switchScreen('welcome-screen', 'story-screen');
-});
-
-// Delay showing the "Next" button until animations finish
-function triggerStoryNextButton() {
-    const nextBtn = document.getElementById('btn-next-story');
-    nextBtn.style.opacity = '0';
-    nextBtn.style.pointerEvents = 'none';
-    
-    // Total animation time for max delay-5 is 5.7s + 1s animation = ~6.7s
-    setTimeout(() => {
-        nextBtn.style.opacity = '1';
-        nextBtn.style.pointerEvents = 'auto';
-    }, 6000);
-}
-
-// --- Story Mode ---
-document.getElementById('btn-next-story').addEventListener('click', () => {
-    document.getElementById(`story-${storyIndex}`).classList.remove('active-slide');
-    storyIndex++;
-    if (storyIndex <= 5) {
-        document.getElementById(`story-${storyIndex}`).classList.add('active-slide');
-        triggerStoryNextButton();
-        
-        if(storyIndex === 5) {
-            document.getElementById('btn-next-story').innerHTML = "Let's see ✨";
-        }
-    } else {
-        switchScreen('story-screen', 'final-screen');
-    }
-});
-
-// --- Final Interactions ---
-document.getElementById('btn-yes').addEventListener('click', () => {
-    triggerExplosion('yes');
-    document.getElementById('response-icon').innerHTML = "💖";
-    document.getElementById('response-text').innerHTML = `
-        <div class="line-container delay-1 anim-zoom color-brown"><h2 class="water-text">You just made my day.</h2></div>
-        <div class="line-container delay-2 anim-slide-right color-rose"><span class="water-text">I'll find a great café.</span></div>
-        <div class="line-container delay-3 anim-slide-up color-gold"><span class="water-text">You bring your smile.</span></div>
-    `;
-    switchScreen('final-screen', 'response-screen');
-});
-
-document.getElementById('btn-no').addEventListener('click', () => {
-    triggerExplosion('no');
-    document.getElementById('response-icon').innerHTML = "☕";
-    document.getElementById('response-text').innerHTML = `
-        <div class="line-container delay-1 anim-drop color-brown"><h2 class="water-text">No worries.</h2></div>
-        <div class="line-container delay-2 anim-slide-left color-dark"><span class="water-text">The invitation stays open.</span></div>
-        <div class="line-container delay-3 anim-slide-up color-peach"><span class="water-text">I hope your day is filled with good coffee and good moments.</span></div>
-    `;
-    switchScreen('final-screen', 'response-screen');
-});
-
-// --- Secret Feature ---
-document.getElementById('coffee-trigger').addEventListener('click', () => {
-    secretCount++;
-    if(secretCount === 7) {
-        triggerExplosion('secret');
-        document.getElementById('coffee-trigger').innerHTML = "🌈";
-        setTimeout(() => {
-            document.getElementById('final-screen').innerHTML = `
-                <div class="giant-coffee anim-zoom delay-1" style="font-size:4rem; opacity:0;">🎉</div>
-                <div class="line-container delay-2 anim-drop"><h2 class="neon-text color-gold water-text">Congratulations.</h2></div>
-                <div class="line-container delay-3 anim-slide-right color-rose"><span class="water-text">You found the hidden surprise!</span></div>
-                <div class="line-container delay-4 anim-slide-up color-dark"><span class="water-text">You are officially amazing.</span></div>
-            `;
-            // Trigger animation classes by toggling active state
-            document.getElementById('final-screen').classList.remove('active');
-            void document.getElementById('final-screen').offsetWidth;
-            document.getElementById('final-screen').classList.add('active');
-        }, 1000);
-    }
-});
-
-// --- DOM Floating Background Elements (CSS based) ---
-const bgContainer = document.getElementById('bg-container');
-const floatingEmojis = ['💖', '🌸', '🦋', '☕', '✨'];
-const noEmojis = ['☕', '💨', '✨', '🤍'];
-
-function createFloatingElement(type = 'ambient') {
-    const el = document.createElement('div');
-    el.className = 'floating-item';
-    
-    let emojiList = floatingEmojis;
-    if(type === 'no') emojiList = noEmojis;
-    
-    el.innerText = emojiList[Math.floor(Math.random() * emojiList.length)];
-    
-    const size = Math.random() * 20 + 15;
-    el.style.fontSize = `${size}px`;
-    el.style.left = `${Math.random() * 100}vw`;
-    
-    const duration = Math.random() * 10 + 10;
-    el.style.animationDuration = `${duration}s`;
-    
-    bgContainer.appendChild(el);
-    
-    setTimeout(() => {
-        el.remove();
-    }, duration * 1000);
-}
-
-// Generate ambient floating elements
-setInterval(() => createFloatingElement('ambient'), 1500);
-for(let i=0; i<8; i++) createFloatingElement('ambient'); // Initial burst
-
-// Generate Clouds
-for(let i=0; i<4; i++) {
-    const cloud = document.createElement('div');
-    cloud.className = 'cloud';
-    cloud.style.width = `${Math.random() * 200 + 100}px`;
-    cloud.style.height = `${Math.random() * 50 + 30}px`;
-    cloud.style.top = `${Math.random() * 50}vh`;
-    cloud.style.animationDuration = `${Math.random() * 40 + 30}s`;
-    cloud.style.animationDelay = `-${Math.random() * 30}s`;
-    bgContainer.appendChild(cloud);
-}
-
-// --- Canvas Particle System (Cursor, Confetti, Fireworks) ---
-class Particle {
-    constructor(x, y, isCursor = false, colorStr = null) {
-        this.x = x;
-        this.y = y;
-        this.isCursor = isCursor;
-        this.life = 1;
-        this.decay = Math.random() * 0.02 + 0.015;
-        
-        if (isCursor) {
-            this.size = Math.random() * 3 + 1;
-            this.vx = (Math.random() - 0.5) * 1;
-            this.vy = (Math.random() - 0.5) * 1;
-            this.color = `255, 215, 0`; // Gold
-        } else {
-            this.size = Math.random() * 8 + 3;
-            const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 15 + 2;
-            this.vx = Math.cos(angle) * speed;
-            this.vy = Math.sin(angle) * speed;
-            this.gravity = 0.2;
-            this.color = colorStr || `${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}`;
-            this.shape = Math.random() > 0.5 ? 'circle' : 'rect';
-            this.decay = Math.random() * 0.01 + 0.005;
-            this.rot = Math.random() * Math.PI;
-            this.rotSpeed = (Math.random() - 0.5) * 0.2;
-        }
-    }
-    
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (!this.isCursor) {
-            this.vy += this.gravity;
-            this.rot += this.rotSpeed;
-        }
-        this.life -= this.decay;
-    }
-    
-    draw(ctx) {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rot || 0);
-        ctx.globalAlpha = Math.max(0, this.life);
-        ctx.fillStyle = `rgba(${this.color}, ${this.life})`;
-        
-        if (this.isCursor) {
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = `rgba(${this.color}, 1)`;
-            ctx.beginPath();
-            ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        } else {
-            if (this.shape === 'circle') {
-                ctx.beginPath();
-                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            } else {
-                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
-            }
-        }
-        ctx.restore();
-    }
-}
-
-function animateParticles() {
-    ctx.clearRect(0, 0, width, height);
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.update();
-        p.draw(ctx);
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-    requestAnimationFrame(animateParticles);
-}
-animateParticles();
-
-// Mouse Trail
-window.addEventListener('mousemove', (e) => {
-    if(Math.random() > 0.5) {
-        particles.push(new Particle(e.clientX, e.clientY, true));
-    }
-});
-window.addEventListener('touchmove', (e) => {
-    if (e.touches.length > 0 && Math.random() > 0.5) {
-        particles.push(new Particle(e.touches[0].clientX, e.touches[0].clientY, true));
-    }
-}, {passive: true});
-
-// Explosions
-function triggerExplosion(type) {
-    const x = width / 2;
-    const y = height / 2;
-    
-    if (type === 'yes' || type === 'secret') {
-        const colors = type === 'secret' ? 
-            ['255,0,0', '0,255,0', '0,0,255', '255,255,0', '255,0,255', '0,255,255'] : 
-            ['232,180,184', '212,175,55', '255,218,185', '255,250,240'];
-            
-        for(let i=0; i<150; i++) {
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            particles.push(new Particle(x, y, false, color));
-        }
-        
-        for(let i=0; i<30; i++) {
-            setTimeout(() => createFloatingElement('ambient'), i * 50);
-        }
-    } else if (type === 'no') {
-        for(let i=0; i<20; i++) {
-            setTimeout(() => createFloatingElement('no'), i * 100);
-        }
-    }
-}
-
-// --- Floating Compliments System ---
-const compliments = [
-    "Hope today has been kind to you.",
-    "You have a beautiful smile.",
-    "Someone appreciates your vibe.",
-    "Keep smiling.",
-    "You deserve good things.",
-    "You're doing great today.",
-    "Take a deep breath and relax."
 ];
 
-const toast = document.getElementById('compliment-toast');
-setInterval(() => {
-    if(toast.classList.contains('show')) return;
-    const text = compliments[Math.floor(Math.random() * compliments.length)];
-    toast.innerText = text;
-    toast.classList.add('show');
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 4000);
-}, 10000);
+// App State
+let currentIndex = 0;
+let solvedTopics = new Set();
+let correctSequence = [];
+let dropzoneItems = [];
+let bankItems = [];
+let isSolved = false;
 
+// DOM Elements
+const dropzoneEl = document.getElementById('dropzone');
+const bankEl = document.getElementById('bank');
+const titleEl = document.getElementById('title');
+const meaningEl = document.getElementById('meaning');
+const detailsGrid = document.getElementById('details-grid');
+const canvas = document.getElementById('physics-canvas');
+const ctx = canvas.getContext('2d');
+
+function init() {
+    renderSidebar();
+    loadTopic(0);
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    requestAnimationFrame(animationLoop);
+    
+    document.getElementById('search').addEventListener('input', (e) => {
+        renderSidebar(e.target.value.toLowerCase());
+    });
+}
+
+function renderSidebar(filter = "") {
+    const list = document.getElementById('topic-list');
+    list.innerHTML = "";
+    topics.forEach((t, i) => {
+        if (t.title.toLowerCase().includes(filter)) {
+            const btn = document.createElement('button');
+            const isSolvedItem = solvedTopics.has(i);
+            btn.className = `topic-btn ${i === currentIndex ? 'active' : ''} ${isSolvedItem ? 'solved' : ''}`;
+            btn.innerHTML = `<span style="opacity:0.5">${t.id}.</span> ${t.title} ${isSolvedItem ? '✔' : ''}`;
+            btn.onclick = () => loadTopic(i);
+            list.appendChild(btn);
+        }
+    });
+}
+
+// Utility: Fisher-Yates Shuffle
+function shuffleArray(array) {
+    let arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function loadTopic(index) {
+    if (index < 0 || index >= topics.length) return;
+    currentIndex = index;
+    const t = topics[index];
+    isSolved = solvedTopics.has(index);
+
+    // Hide Details / Reset UI
+    gsap.to(detailsGrid, { opacity: 0, duration: 0.3, onComplete: () => {
+        detailsGrid.style.display = 'none';
+        dropzoneEl.className = 'dropzone'; // Reset colors
+        
+        titleEl.textContent = t.title;
+        meaningEl.textContent = t.meaning;
+        
+        if(isSolved) {
+            document.getElementById('status-badge').textContent = "✅ Mastered";
+            document.getElementById('status-badge').style.color = "var(--accent-green)";
+            setupPuzzleState(true);
+            showDetails(); // Instantly show details if already solved
+        } else {
+            document.getElementById('status-badge').textContent = "Solve to unlock info";
+            document.getElementById('status-badge').style.color = "var(--text-muted)";
+            setupPuzzleState(false);
+        }
+        
+        renderSidebar(document.getElementById('search').value);
+        setupViz(t.viz);
+    }});
+}
+
+function setupPuzzleState(preSolved) {
+    const t = topics[currentIndex];
+    correctSequence = [...t.puzzle.parts];
+    
+    if (preSolved) {
+        dropzoneItems = [...correctSequence];
+        bankItems = [];
+    } else {
+        dropzoneItems = [];
+        bankItems = shuffleArray([...t.puzzle.parts, ...t.puzzle.distractors]);
+    }
+    renderPuzzleUI();
+}
+
+function renderPuzzleUI() {
+    dropzoneEl.innerHTML = "";
+    bankEl.innerHTML = "";
+    
+    dropzoneItems.forEach((part, idx) => {
+        const div = document.createElement('div');
+        div.className = 'piece';
+        katex.render(part, div, { throwOnError: false });
+        if(!isSolved) div.onclick = () => movePiece('dropzone', idx);
+        dropzoneEl.appendChild(div);
+    });
+
+    bankItems.forEach((part, idx) => {
+        const div = document.createElement('div');
+        div.className = 'piece';
+        katex.render(part, div, { throwOnError: false });
+        if(!isSolved) div.onclick = () => movePiece('bank', idx);
+        bankEl.appendChild(div);
+    });
+}
+
+function movePiece(from, index) {
+    if(isSolved) return;
+    
+    if (from === 'bank') {
+        const item = bankItems.splice(index, 1)[0];
+        dropzoneItems.push(item);
+    } else {
+        const item = dropzoneItems.splice(index, 1)[0];
+        bankItems.push(item);
+    }
+    // Simple fast re-render (GSAP layout animations can be complex in pure DOM, so we snap and scale)
+    renderPuzzleUI();
+    gsap.from(".piece", {scale: 0.8, opacity: 0.8, duration: 0.2, stagger: 0.02});
+}
+
+function resetPuzzle() {
+    if(isSolved) return;
+    setupPuzzleState(false);
+    gsap.from(".piece", {y: 20, opacity: 0, duration: 0.3});
+    dropzoneEl.classList.remove('error');
+}
+
+function checkAnswer() {
+    if(isSolved) return;
+    
+    const userAns = dropzoneItems.join("");
+    const correctAns = correctSequence.join("");
+    
+    if (userAns === correctAns) {
+        // Success
+        isSolved = true;
+        solvedTopics.add(currentIndex);
+        dropzoneEl.classList.add('success');
+        
+        // Confetti
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#00FF88', '#00E5FF'] });
+        
+        document.getElementById('status-badge').textContent = "✅ Mastered";
+        document.getElementById('status-badge').style.color = "var(--accent-green)";
+        updateProgress();
+        renderSidebar();
+        
+        // Remove distractors from bank
+        bankItems = [];
+        renderPuzzleUI();
+        
+        showDetails();
+    } else {
+        // Error
+        dropzoneEl.classList.add('error');
+        gsap.to(dropzoneEl, {x: -10, duration: 0.1, yoyo: true, repeat: 5, onComplete: () => {
+            gsap.to(dropzoneEl, {x: 0});
+            setTimeout(() => dropzoneEl.classList.remove('error'), 1000);
+        }});
+    }
+}
+
+function showHint() {
+    if(isSolved) return;
+    alert("Hint: The first piece should be: " + correctSequence[0]);
+}
+
+function showDetails() {
+    const t = topics[currentIndex];
+    
+    document.getElementById('variables-list').innerHTML = t.vars.map(v => 
+        `<div class="var-row"><span class="var-sym">${katex.renderToString(v.s)}</span><span>${v.d}</span></div>`
+    ).join('');
+    
+    document.getElementById('si-unit').textContent = t.unit;
+    document.getElementById('dimensions').textContent = t.dim;
+    document.getElementById('shortcut').textContent = t.shortcut;
+    document.getElementById('memory-trick').textContent = t.memory;
+    document.getElementById('mistakes').textContent = t.mistakes;
+    document.getElementById('notes').innerHTML = t.notes.map(n => `<li style="margin-bottom:5px;">${n}</li>`).join('');
+
+    detailsGrid.style.display = 'grid';
+    gsap.to(detailsGrid, { opacity: 1, duration: 0.8, y: -20, ease: "power2.out" });
+    
+    // Ambient color shift on success
+    document.getElementById('ambient-bg').style.background = `radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 60%)`;
+    setTimeout(() => {
+        document.getElementById('ambient-bg').style.background = `radial-gradient(circle at 20% 30%, rgba(0, 229, 255, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255, 0, 85, 0.08) 0%, transparent 50%)`;
+    }, 2000);
+}
+
+function nextTopic() { loadTopic(currentIndex + 1); }
+function prevTopic() { loadTopic(currentIndex - 1); }
+
+function updateProgress() {
+    const pct = (solvedTopics.size / topics.length) * 100;
+    document.getElementById('progress-bar').style.width = pct + "%";
+    document.getElementById('progress-text').textContent = `${solvedTopics.size}/${topics.length} Solved`;
+}
+
+// ---------------------------------------------------------
+// PHYSICS RENDERING ENGINE (Runs in BG)
+// Unlocks full vibrancy only when puzzle is solved
+// ---------------------------------------------------------
+let particles = [];
+let currentViz = "";
+let time = 0;
+
+function resizeCanvas() {
+    canvas.width = document.getElementById('hero-section').clientWidth;
+    canvas.height = document.getElementById('hero-section').clientHeight;
+}
+
+function setupViz(type) {
+    currentViz = type;
+    particles = [];
+    const cx = canvas.width/2;
+    const cy = canvas.height/2;
+
+    if (type === "point_charge" || type === "shell") particles.push({x: cx, y: cy, q: 1, r: 20});
+    else if (["coulomb", "vector", "medium", "dipole_sys", "dipole_moment"].includes(type)) {
+        particles.push({x: cx - 120, y: cy, q: -1, r: 15});
+        particles.push({x: cx + 120, y: cy, q: 1, r: 15});
+    }
+    else if (["lines", "flux", "gauss"].includes(type)) particles.push({x: cx, y: cy, q: 1, r: 15});
+}
+
+function drawCharge(p) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    // Dim if unsolved, bright if solved
+    const alpha = isSolved ? 0.8 : 0.2;
+    ctx.fillStyle = p.q > 0 ? `rgba(255, 0, 85, ${alpha})` : `rgba(0, 229, 255, ${alpha})`;
+    ctx.shadowBlur = isSolved ? 20 : 0;
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.font = "bold 16px Inter";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(p.q > 0 ? "+" : "-", p.x, p.y);
+}
+
+function animationLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    time += 0.05;
+    const cx = canvas.width/2;
+    const cy = canvas.height/2;
+    const alpha = isSolved ? 0.5 : 0.1; // opacity modifier based on lock state
+
+    if(currentViz === "point_charge" || currentViz === "lines") {
+        ctx.strokeStyle = `rgba(0, 229, 255, ${alpha/2})`;
+        for(let i=0; i<12; i++) {
+            let angle = (i * Math.PI*2/12) + (isSolved ? time*0.1 : 0);
+            ctx.beginPath(); ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(angle)*300, cy + Math.sin(angle)*300); ctx.stroke();
+        }
+        particles.forEach(drawCharge);
+    }
+    else if (currentViz === "coulomb") {
+        if(isSolved) {
+            particles[0].x = cx - 120 + Math.sin(time)*15;
+            particles[1].x = cx + 120 - Math.sin(time)*15;
+        }
+        ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        ctx.setLineDash([5, 5]); ctx.beginPath();
+        ctx.moveTo(particles[0].x, particles[0].y); ctx.lineTo(particles[1].x, particles[1].y);
+        ctx.stroke(); ctx.setLineDash([]);
+        particles.forEach(drawCharge);
+    }
+    else if (["capacitor", "density", "pressure", "series", "parallel"].includes(currentViz)) {
+        ctx.fillStyle = `rgba(255, 0, 85, ${alpha})`; ctx.fillRect(cx - 200, cy - 80, 400, 20);
+        ctx.fillStyle = `rgba(0, 229, 255, ${alpha})`; ctx.fillRect(cx - 200, cy + 60, 400, 20);
+        
+        if(isSolved) {
+            ctx.strokeStyle = `rgba(255,255,255,0.2)`;
+            let offset = (time * 20) % 30;
+            for(let x = cx - 180; x <= cx + 180; x += 30) {
+                ctx.beginPath(); ctx.moveTo(x, cy - 60); ctx.lineTo(x, cy + 60); ctx.stroke();
+                let ay = cy - 60 + ((offset + x)%120);
+                if(ay < cy + 50 && ay > cy - 50) {
+                    ctx.beginPath(); ctx.moveTo(x, ay); ctx.lineTo(x-5, ay-5); ctx.lineTo(x+5, ay-5);
+                    ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.fill();
+                }
+            }
+        }
+    }
+    else if (currentViz === "gauss") {
+        particles.forEach(drawCharge);
+        ctx.strokeStyle = `rgba(255, 215, 0, ${alpha})`; 
+        ctx.setLineDash([10, 10]); ctx.beginPath();
+        ctx.arc(cx, cy, 120 + (isSolved ? Math.sin(time)*10 : 0), 0, Math.PI*2);
+        ctx.stroke(); ctx.setLineDash([]);
+    }
+    else {
+        particles.forEach(drawCharge);
+        ctx.fillStyle = `rgba(255,255,255,${alpha/2})`;
+        for(let i=0; i<8; i++) {
+            ctx.beginPath();
+            ctx.arc(cx + Math.cos(time+i)*150, cy + Math.sin(time+i)*80, 4, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
+    
+    requestAnimationFrame(animationLoop);
+}
+
+window.onload = init;
 </script>
 </body>
 </html>
